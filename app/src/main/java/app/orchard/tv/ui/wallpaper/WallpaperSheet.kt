@@ -4,6 +4,7 @@ import android.os.Build
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.AnimationSpec
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -15,6 +16,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.gestures.BringIntoViewSpec
+import androidx.compose.foundation.gestures.LocalBringIntoViewSpec
 import androidx.compose.foundation.relocation.BringIntoViewResponder
 import androidx.compose.foundation.relocation.bringIntoViewResponder
 import androidx.compose.ui.geometry.Rect
@@ -42,6 +45,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicText
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -65,6 +69,7 @@ import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
@@ -99,6 +104,7 @@ import app.orchard.tv.weather.WeatherKind
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlin.math.abs
 import kotlin.math.roundToInt
 import androidx.compose.ui.geometry.Size
 
@@ -108,6 +114,7 @@ import androidx.compose.ui.geometry.Size
  * right opens the same settings on a phone, where sending photos is easy.
  */
 @Composable
+@OptIn(ExperimentalFoundationApi::class)
 fun WallpaperSheet(
     visible: Boolean,
     onDismiss: () -> Unit,
@@ -153,7 +160,7 @@ fun WallpaperSheet(
     }
 
     // The sheet as it opens, or (takeFocus false) drawn once nearly clear for the warm-up.
-    val sheet: @Composable (takeFocus: Boolean) -> Unit = { takeFocus ->
+    val sheetBody: @Composable (takeFocus: Boolean) -> Unit = { takeFocus ->
         Row(
             Modifier
                 .fillMaxWidth()
@@ -373,6 +380,11 @@ fun WallpaperSheet(
             PhoneCard(phoneUrl, qr)
         }
     }
+    // Every scroll in the sheet — the setting rows and the wallpaper cards — is aimed by this one
+    // spec; see SheetBringIntoView for the pixel it used to twitch by.
+    val sheet: @Composable (takeFocus: Boolean) -> Unit = { takeFocus ->
+        CompositionLocalProvider(LocalBringIntoViewSpec provides SheetBringIntoView) { sheetBody(takeFocus) }
+    }
 
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.BottomCenter) {
         // The first opening composed the sheet and gave the GPU its pictures, glyphs and shaders
@@ -540,16 +552,24 @@ private fun Group(note: String? = null, rows: @Composable ColumnScope.(note: (St
     var focusedNote by remember { mutableStateOf<String?>(null) }
     var inside by remember { mutableStateOf(false) }
     var height by remember { mutableStateOf(0f) }
-    // A focused row asks the sheet to show it from its top down to the group's note: the
-    // screensaver's group sits at the sheet's bottom, and showing the row alone (on TV, Compose
-    // keeps a focused row about a third down) left the quality's note below the screen. One
-    // request, so the sheet scrolls once; a second scroll after the focus's own made the sheet
-    // jump back and forth on every press (TCL MT5879).
-    val withNote = remember {
+    // A focused row asks the sheet to show that row and no more, so the row it lands on sits right
+    // on the sheet's edge, the way it does going up. Only the group's last row asks for its note's
+    // room as well: that note is the one directly under it, and a hint cut off by the sheet's edge
+    // would be no hint at all. Asking for the note's room under every row (26.4) landed each row
+    // 38dp above the edge with the next row's top peeking in — the row near the edge, never on it
+    // (Xiaomi MiTV-MFTR0). Asking for the whole group instead made a group taller than the sheet
+    // (the home layout one, six rows) impossible to satisfy without shoving the focused row to the
+    // sheet's top: the sheet jumped a whole group at a time. One request, so the sheet scrolls
+    // once; a second scroll after the focus's own made it jump back and forth (TCL MT5879).
+    val notePx = with(LocalDensity.current) { NoteHeight.toPx() }
+    val withNote = remember(notePx) {
         @OptIn(ExperimentalFoundationApi::class)
         object : BringIntoViewResponder {
-            override fun calculateRectForParent(localRect: Rect) =
-                Rect(localRect.left, localRect.top, localRect.right, maxOf(localRect.bottom, height))
+            override fun calculateRectForParent(localRect: Rect): Rect {
+                val below = height - localRect.bottom
+                val bottom = if (below <= notePx + 2f) height else localRect.bottom
+                return Rect(localRect.left, localRect.top, localRect.right, maxOf(bottom, localRect.bottom))
+            }
             override suspend fun bringChildIntoView(localRect: () -> Rect?) {}
         }
     }
@@ -562,7 +582,7 @@ private fun Group(note: String? = null, rows: @Composable ColumnScope.(note: (St
                 .background(Color.White.copy(alpha = 0.05f))
                 .onFocusChanged { inside = it.hasFocus },
         ) { rows { focusedNote = it } }
-        Box(Modifier.height(38.dp).padding(start = 16.dp, top = 7.dp)) {
+        Box(Modifier.height(NoteHeight).padding(start = 16.dp, top = 7.dp)) {
             (if (inside) focusedNote ?: note else note)?.let {
                 BasicText(it, style = Type.Caption.copy(color = Palette.TertiaryLabel), maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
@@ -579,10 +599,24 @@ private fun SettingRow(label: Int, hint: String?, note: (String?) -> Unit, first
     // effects one, the anti-burn-in one) would otherwise still say the old thing after a press,
     // until focus left the row and came back to it.
     LaunchedEffect(hint, focused) { if (focused) note(hint) }
+    // A focused chip asks for itself, 40dp tall in a 58dp row: the sheet scrolled that chip onto
+    // its edge and cut the chip's own bottom off with it. Asking for the whole row instead lands
+    // the row on the edge, the chip a row's padding above it, as in Settings on tvOS.
+    val rowPx = with(LocalDensity.current) { RowHeight.toPx() }
+    val rowRect = remember(rowPx) {
+        @OptIn(ExperimentalFoundationApi::class)
+        object : BringIntoViewResponder {
+            override fun calculateRectForParent(localRect: Rect) =
+                Rect(localRect.left, 0f, localRect.right, rowPx)
+            override suspend fun bringChildIntoView(localRect: () -> Rect?) {}
+        }
+    }
+    @OptIn(ExperimentalFoundationApi::class)
     Row(
         Modifier
             .fillMaxWidth()
-            .height(58.dp)
+            .height(RowHeight)
+            .bringIntoViewResponder(rowRect)
             .padding(start = 18.dp, end = 10.dp)
             .onFocusChanged { focused = it.hasFocus },
         verticalAlignment = Alignment.CenterVertically,
@@ -751,6 +785,42 @@ private fun PhoneCard(url: String?, qr: ImageBitmap?) {
 
 private val SheetHeight = 360.dp
 private val SheetCorner = 30.dp
+
+/** Room kept under a group's last row for its note, so the sheet does not shift as focus moves. */
+private val NoteHeight = 38.dp
+
+/** One setting row's height; the note sits this far below the row above the group's last one. */
+private val RowHeight = 58.dp
+
+/**
+ * How the sheet scrolls a focused row into view: at most what that row asks for, and nothing at
+ * all for a pixel or two.
+ *
+ * Android's own spec here is the TV pivot, which tries to sit the focused row about a third of the
+ * way down the sheet. A row that cannot be put exactly there was asked for again on the next frame,
+ * and the sheet stood still twitching up and down by a pixel after focus came to rest on a row
+ * around the key sounds one (Xiaomi MiTV-MFTR0, 26.4). Scrolling only as far as the row needs, and
+ * not at all for a pixel or two, keeps the sheet still; a tween rather than the default spring also
+ * takes the overshoot out of the last few pixels of a scroll. What a row asks for is its whole
+ * 58dp cell (see SettingRow), so a scroll down puts that row's bottom on the sheet's edge and a
+ * scroll up its top, the same at every row.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+private val SheetBringIntoView = object : BringIntoViewSpec {
+    override val scrollAnimationSpec: AnimationSpec<Float> = tween(240, easing = Motion.EaseOut)
+
+    override fun calculateScrollDistance(offset: Float, size: Float, containerSize: Float): Float {
+        val distance = when {
+            // Taller than the sheet itself: all that can be shown is its top.
+            size >= containerSize -> offset
+            offset < 0f -> offset
+            offset + size > containerSize -> offset + size - containerSize
+            else -> 0f
+        }
+        // Two pixels are not worth a scroll, and asking for them is what made the sheet twitch.
+        return if (abs(distance) < 2f) 0f else distance
+    }
+}
 
 /**
  * How much of the screen's bottom the settled sheet hides whole: its height less its rounded top

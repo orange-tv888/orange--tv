@@ -1,8 +1,8 @@
 {
-  "version": "26.4",
+  "version": "26.4.1",
   "apk": "https://ghproxy.net/https://raw.githubusercontent.com/orange-tv888/orange--tv/main/update/orange.apk",
   "notes": [
-    "自动更新已接通，以后新版在电视上直接安装",
-    "更新检查改走国内可访问的通道"
+    "个性化面板滚动改成贴着边缘逐行移动，不再一次跳一整组",
+    "修掉停在「按键声音」附近时面板上下抖 1 像素"
   ]
 }
