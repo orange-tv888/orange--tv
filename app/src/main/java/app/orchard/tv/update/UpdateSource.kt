@@ -6,10 +6,11 @@ import org.json.JSONObject
 /**
  * Where Orange looks for a newer version, and what a release note looks like.
  *
- * The release is published on GitHub, but github.com itself is unreliable from Chinese home
- * broadband — the update page would say "check failed" most of the time. So the same two files are
- * also kept in this repository under update/, which jsDelivr serves from Chinese CDN nodes. The
- * order below is what the app tries: jsDelivr first, GitHub second, raw.githubusercontent last.
+ * The release is published on GitHub, but github.com itself does not answer from Chinese home
+ * broadband: measured on the TV, TCP 443 to github.com, raw.githubusercontent.com and
+ * cdn.jsdelivr.net all time out, while a GitHub mirror does answer. So the app asks a mirror first
+ * and only falls back to the direct URLs, which work from networks where GitHub itself is fine.
+ * The files live in this repository under update/, so pushing is all a release needs.
  *
  * A version.json names the APK it belongs to. That is deliberate: moving to another host later
  * means editing the JSON, not shipping a new build. When it names none, [APK_URLS] is used.
@@ -28,17 +29,27 @@ object UpdateSource {
      */
     const val REPO = "orange-tv888/orange--tv"
 
+    /**
+     * A GitHub mirror reachable from mainland China. Prefixed to a raw.githubusercontent URL it
+     * returns the same bytes. It is one volunteer service, so it is never the only way in: the
+     * direct URLs below are tried after it.
+     */
+    private const val MIRROR = "https://gh-proxy.com/"
+
+    private fun raw(path: String) = "https://raw.githubusercontent.com/$REPO/main/$path"
+
     /** version.json, in the order they are tried. */
     val VERSION_URLS: List<String> = listOf(
+        MIRROR + raw("update/version.json"),
+        raw("update/version.json"),
         "https://cdn.jsdelivr.net/gh/$REPO@main/update/version.json",
-        "https://github.com/$REPO/releases/latest/download/version.json",
-        "https://raw.githubusercontent.com/$REPO/main/update/version.json",
     )
 
     /** Where the APK is fetched from when the JSON names no apk. */
     val APK_URLS: List<String> = listOf(
+        MIRROR + raw("update/orange.apk"),
+        raw("update/orange.apk"),
         "https://cdn.jsdelivr.net/gh/$REPO@main/update/orange.apk",
-        "https://github.com/$REPO/releases/latest/download/orange.apk",
     )
 
     /** At most this many lines of "what changed" are shown; more than that is not read on a TV. */

@@ -91,7 +91,8 @@ class UpdateSourceTest {
         val urls = UpdateSource.VERSION_URLS + UpdateSource.APK_URLS
         assertTrue(urls.all { it.contains(UpdateSource.REPO) })
         assertTrue(urls.all { it.startsWith("https://") })
-        // jsDelivr first: it is the one that answers from China.
-        assertTrue(UpdateSource.VERSION_URLS.first().startsWith("https://cdn.jsdelivr.net/"))
+        // The mirror first: it is the one that answers from China, where GitHub does not.
+        assertTrue(UpdateSource.VERSION_URLS.first().startsWith("https://gh-proxy.com/https://raw.githubusercontent.com/"))
+        assertTrue(UpdateSource.APK_URLS.first().startsWith("https://gh-proxy.com/https://raw.githubusercontent.com/"))
     }
 }

@@ -19,7 +19,7 @@ note() { printf "\033[90m· %s\033[0m\n" "$*"; }
 VER=$1; shift
 NOTES=("$@")
 
-echo "$VER" | grep -Eq '^26\.[0-9]+(\.[0-9]+)?$' || die "版本号要写成 26.4 或 26.4.1 这样（收到：$VER）"
+echo "$VER" | grep -Eq '^26\.[0-9]+(\.[0-9]+)?$' || die "版本号要写成 26.4 或 26.4.1 这样（收到：${VER}）"
 [ ${#NOTES[@]} -le 4 ] || die "更新说明最多 4 条，电视上放不下更多"
 
 IFS=. read -r YEAR MINOR PATCH <<< "$VER"
@@ -34,17 +34,20 @@ note "仓库 $REPO"
 git rev-parse --git-dir >/dev/null 2>&1 || die "这里还不是 git 仓库。先 git init 并接上 GitHub 远端。"
 
 CUR=$(grep -oE 'versionName = "[^"]+"' app/build.gradle.kts | cut -d'"' -f2)
-note "当前 $CUR → 将发布 $VER（versionCode $CODE）"
+note "当前 $CUR → 将发布 ${VER}（versionCode ${CODE}）"
 
 # ---- 1. 版本号 ----
-sed -i '' -E "s/versionCode = [0-9]+/versionCode = $CODE/" app/build.gradle.kts
-sed -i '' -E "s/versionName = \"[^\"]+\"/versionName = \"$VER\"/" app/build.gradle.kts
+/usr/bin/perl -pi -e "s/versionCode = [0-9]+/versionCode = $CODE/" app/build.gradle.kts
+/usr/bin/perl -pi -e "s/versionName = \"[^\"]+\"/versionName = \"$VER\"/" app/build.gradle.kts
 
 # ---- 2. 打包 ----
 note "编译中（R8 是最慢的一步）…"
 JAVA_HOME=${JAVA_HOME:-/Users/jiamingcai/WorkBuddy/2026-10-29-13-04-49/toolchain/jdk-17.0.20.1+1/Contents/Home}
 export JAVA_HOME
-./gradlew assembleStandardRelease --console=plain >/dev/null || die "编译失败，看 ./gradlew assembleStandardRelease 的输出"
+# 这台 Mac 只有 8GB 内存：默认的 -Xmx4g 会让 R8 被系统 OOM 杀掉（exit 137）。
+./gradlew assembleStandardRelease --console=plain --max-workers=2 \
+    -Dorg.gradle.jvmargs="-Xmx2g -XX:MaxMetaspaceSize=512m -Dfile.encoding=UTF-8" >/dev/null \
+    || die "编译失败，看 ./gradlew assembleStandardRelease 的输出"
 
 APK=$(ls -t app/build/outputs/apk/standard/release/*.apk | head -1)
 [ -n "$APK" ] || die "没找到打出来的 APK"
@@ -58,11 +61,11 @@ cp "$APK" "dist/orange-$VER.apk"                  # 本地留档，也方便直�
 # ---- 4. 版本说明 ----
 {
     printf '{\n  "version": "%s",\n' "$VER"
-    printf '  "apk": "https://cdn.jsdelivr.net/gh/%s@main/update/orange.apk",\n' "$REPO"
+    printf '  "apk": "https://gh-proxy.com/https://raw.githubusercontent.com/%s/main/update/orange.apk",\n' "$REPO"
     if [ ${#NOTES[@]} -gt 0 ]; then
         printf '  "notes": [\n'
         for i in "${!NOTES[@]}"; do
-            line=$(printf '%s' "${NOTES[$i]}" | sed 's/\\/\\\\/g; s/"/\\"/g')
+            line=$(printf '%s' "${NOTES[$i]}" | /usr/bin/sed 's/\\/\\\\/g; s/"/\\"/g')
             if [ "$i" -lt $(( ${#NOTES[@]} - 1 )) ]; then
                 printf '    "%s",\n' "$line"
             else
@@ -77,7 +80,7 @@ cp "$APK" "dist/orange-$VER.apk"                  # 本地留档，也方便直�
 } > update/version.json
 
 note "版本说明："
-cat update/version.json | sed 's/^/    /'
+cat update/version.json | /usr/bin/sed 's/^/    /'
 
 # ---- 5. 提交 ----
 git add -A
@@ -97,10 +100,14 @@ else
     note "没装 gh。去 https://github.com/$REPO/releases/new 手动传 dist/orange-$VER.apk，tag 写 v$VER"
 fi
 
-# ---- 7. 刷 CDN 缓存 ----
-# jsDelivr 对 @main 的缓存默认留 12 小时；不刷的话电视看到的还是旧版本号。
-curl -s "https://purge.jsdelivr.net/gh/$REPO@main/update/version.json" >/dev/null && note "jsDelivr 缓存已刷新" \
-    || note "刷新 jsDelivr 缓存失败，最多等 12 小时"
+# ---- 7. 确认线上能读到 ----
+# 电视第一个问的是 GitHub 中转，所以这里也用中转去读，读到什么就是电视会看到什么。
+MIRROR="https://gh-proxy.com/https://raw.githubusercontent.com/$REPO/main/update/version.json"
+if curl -sf --max-time 25 --noproxy '*' "$MIRROR" | grep -q "\"$VER\""; then
+    note "中转已能读到 $VER"
+else
+    note "中转暂时还没读到 ${VER}（可能缓存几分钟），电视那次检查会自己重试"
+fi
 
 echo
 printf "\033[32m\033[0m发布完成：Orange %s（versionCode %s）\n" "$VER" "$CODE"

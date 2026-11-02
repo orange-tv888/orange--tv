@@ -11,7 +11,7 @@ Orange 只是把它的身份和地址换成了自己的。
 Orange 桌面（每 3 小时，或打开控制中心时）
         │  GET version.json
         ▼
-jsDelivr  ──失败──▶ GitHub Releases ──失败──▶ raw.githubusercontent
+gh-proxy（GitHub 中转）──失败──▶ raw.githubusercontent ──失败──▶ jsDelivr
         │ 一个文本通了就算成功
         ▼
 26.4 > 26.3.6 ？
@@ -38,11 +38,36 @@ PackageInstaller 会话  ──▶  系统弹窗「要安装此应用吗」
 换托管位置只要改 `version.json` 一个字段，不用发新版。`UpdateSource.APK_URLS` 只是
 JSON 没写 `apk` 时的兜底。
 
-### 为什么第一个源是 jsDelivr
+### 为什么第一个源是 GitHub 中转
 
-github.com 在中国的家庭宽带里经常不通，尤其是 Release 下载。jsDelivr 从国内 CDN 节点
-回源同一份仓库文件，`version.json` 几百字节，基本能拿到。三个源都失败才判定检查失败，
-失败后按 30 秒 / 2 分钟 / 10 分钟 / 30 分钟退避重试。
+这一条是实测出来的，不是猜的。在这台电视（小米 MiTV-ASTP0，家庭宽带）上用 `nc` 一个
+一个试 443 端口：
+
+| 站点 | 结果 |
+|---|---|
+| `github.com` | 连不上 |
+| `raw.githubusercontent.com` | 连不上 |
+| `cdn.jsdelivr.net` | 连不上 |
+| `gh-proxy.com`（GitHub 中转） | 通 |
+| `gitee.com` | 通 |
+
+所以电视端的第一个源是 `gh-proxy.com` 拼在 GitHub raw 前面，直连地址只作为第二、第三
+兜底（在 GitHub 本身能通的网络里就会命中它们）。文件都放在仓库的 `update/` 目录，发版
+就是一次 `git push`，不需要 Release、不需要令牌。
+
+> 注意：如果在开着代理的电脑上测，结论会完全相反——代理让 github.com 变通，于是看起来
+> 一切正常，电视上却查不到更新。测这类问题必须在电视上测。
+
+### 中转挂了怎么办
+
+`gh-proxy.com` 是志愿者的服务，不保证永久。它挂了不影响已装的应用运行，只是查不到新
+版本。补救办法有两个，都不用发新版：
+
+- 换 `UpdateSource.MIRROR` 常量（需要发一次版）
+- 或者把 `version.json` 的 `apk` 字段指到别处（改文件即可，下次检查就生效）
+
+真要长期稳定，把这两个文件放到国内对象存储（阿里云 OSS / 腾讯云 COS 默认域名，免备案，
+几块钱一年），然后改 `version.json` 的 `apk` 字段指向它即可。
 
 ### 安全
 
