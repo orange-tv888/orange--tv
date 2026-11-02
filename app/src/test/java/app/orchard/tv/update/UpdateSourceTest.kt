@@ -92,7 +92,7 @@ class UpdateSourceTest {
         assertTrue(urls.all { it.contains(UpdateSource.REPO) })
         assertTrue(urls.all { it.startsWith("https://") })
         // The mirror first: it is the one that answers from China, where GitHub does not.
-        assertTrue(UpdateSource.VERSION_URLS.first().startsWith("https://gh-proxy.com/https://raw.githubusercontent.com/"))
-        assertTrue(UpdateSource.APK_URLS.first().startsWith("https://gh-proxy.com/https://raw.githubusercontent.com/"))
+        assertTrue(UpdateSource.VERSION_URLS.first().startsWith("https://ghproxy.net/https://raw.githubusercontent.com/"))
+        assertTrue(UpdateSource.APK_URLS.first().startsWith("https://ghproxy.net/https://raw.githubusercontent.com/"))
     }
 }

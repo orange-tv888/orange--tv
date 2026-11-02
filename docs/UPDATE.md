@@ -48,12 +48,16 @@ JSON 没写 `apk` 时的兜底。
 | `github.com` | 连不上 |
 | `raw.githubusercontent.com` | 连不上 |
 | `cdn.jsdelivr.net` | 连不上 |
-| `gh-proxy.com`（GitHub 中转） | 通 |
+| `ghproxy.net`（GitHub 中转） | 通 |
+| `gh-proxy.com`（另一个中转） | 通 |
 | `gitee.com` | 通 |
 
-所以电视端的第一个源是 `gh-proxy.com` 拼在 GitHub raw 前面，直连地址只作为第二、第三
-兜底（在 GitHub 本身能通的网络里就会命中它们）。文件都放在仓库的 `update/` 目录，发版
-就是一次 `git push`，不需要 Release、不需要令牌。
+所以电视端先试中转，直连地址只作为兜底（在 GitHub 本身能通的网络里会命中它们）。文件都
+放在仓库的 `update/` 目录，发版就是一次 `git push`，不需要 Release、不需要令牌。
+
+**中转顺序也有讲究**：`gh-proxy.com` 自己的缓存活得比 Cloudflare 的 60 秒更长，推完新
+版本十几分钟它还返回旧的 `version.json`；`ghproxy.net` 推完立刻就是新的。所以 `ghproxy.net`
+排第一，`gh-proxy.com` 排第二。判断依据是实测，不是文档。
 
 > 注意：如果在开着代理的电脑上测，结论会完全相反——代理让 github.com 变通，于是看起来
 > 一切正常，电视上却查不到更新。测这类问题必须在电视上测。

@@ -30,27 +30,27 @@ object UpdateSource {
     const val REPO = "orange-tv888/orange--tv"
 
     /**
-     * A GitHub mirror reachable from mainland China. Prefixed to a raw.githubusercontent URL it
-     * returns the same bytes. It is one volunteer service, so it is never the only way in: the
-     * direct URLs below are tried after it.
+     * GitHub mirrors reachable from mainland China. Prefixed to a raw.githubusercontent URL they
+     * return the same bytes. Both are volunteer services, so neither is the only way in: the
+     * direct URLs below are tried after them.
+     *
+     * Order matters and was measured, not guessed: gh-proxy.com kept serving a cached
+     * version.json long after the push (its own cache outlives the Cloudflare 60 s), so a release
+     * took minutes to show up. ghproxy.net answers with the new file at once.
      */
-    private const val MIRROR = "https://gh-proxy.com/"
+    private val MIRRORS = listOf("https://ghproxy.net/", "https://gh-proxy.com/")
 
     private fun raw(path: String) = "https://raw.githubusercontent.com/$REPO/main/$path"
 
+    private fun jsdelivr(path: String) = "https://cdn.jsdelivr.net/gh/$REPO@main/$path"
+
     /** version.json, in the order they are tried. */
-    val VERSION_URLS: List<String> = listOf(
-        MIRROR + raw("update/version.json"),
-        raw("update/version.json"),
-        "https://cdn.jsdelivr.net/gh/$REPO@main/update/version.json",
-    )
+    val VERSION_URLS: List<String> =
+        MIRRORS.map { it + raw("update/version.json") } + raw("update/version.json") + jsdelivr("update/version.json")
 
     /** Where the APK is fetched from when the JSON names no apk. */
-    val APK_URLS: List<String> = listOf(
-        MIRROR + raw("update/orange.apk"),
-        raw("update/orange.apk"),
-        "https://cdn.jsdelivr.net/gh/$REPO@main/update/orange.apk",
-    )
+    val APK_URLS: List<String> =
+        MIRRORS.map { it + raw("update/orange.apk") } + raw("update/orange.apk") + jsdelivr("update/orange.apk")
 
     /** At most this many lines of "what changed" are shown; more than that is not read on a TV. */
     const val MAX_NOTES = 4

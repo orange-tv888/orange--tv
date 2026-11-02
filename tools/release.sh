@@ -65,7 +65,7 @@ cp "$APK" "dist/orange-$VER.apk"                  # 本地留档，也方便直�
 # ---- 4. 版本说明 ----
 {
     printf '{\n  "version": "%s",\n' "$VER"
-    printf '  "apk": "https://gh-proxy.com/https://raw.githubusercontent.com/%s/main/update/orange.apk",\n' "$REPO"
+    printf '  "apk": "https://ghproxy.net/https://raw.githubusercontent.com/%s/main/update/orange.apk",\n' "$REPO"
     if [ ${#NOTES[@]} -gt 0 ]; then
         printf '  "notes": [\n'
         for i in "${!NOTES[@]}"; do
@@ -106,7 +106,7 @@ fi
 
 # ---- 7. 确认线上能读到 ----
 # 电视第一个问的是 GitHub 中转，所以这里也用中转去读，读到什么就是电视会看到什么。
-MIRROR="https://gh-proxy.com/https://raw.githubusercontent.com/$REPO/main/update/version.json"
+MIRROR="https://ghproxy.net/https://raw.githubusercontent.com/$REPO/main/update/version.json"
 if curl -sf --max-time 25 --noproxy '*' "$MIRROR" | grep -q "\"$VER\""; then
     note "中转已能读到 $VER"
 else
