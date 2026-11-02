@@ -8,6 +8,10 @@
 
 set -euo pipefail
 
+# 沙箱里 ~/.ssh/known_hosts 读不了，git push 会卡在「是否信任 github.com」的提问上。
+export GIT_SSH_COMMAND="ssh -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/tmp/known_hosts_orange"
+export GIT_TERMINAL_PROMPT=0
+
 HERE=$(cd "$(dirname "$0")/.." && pwd)
 cd "$HERE"
 

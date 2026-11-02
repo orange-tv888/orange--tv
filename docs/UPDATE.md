@@ -109,20 +109,20 @@ JSON 没写 `apk` 时的兜底。
 
 脚本会：
 
-1. 按 `26.Y.P → Y×10+P+2600` 算 versionCode，改 `app/build.gradle.kts`
-2. `assembleStandardRelease`
-3. 把 APK 复制成 `update/orange.apk`（jsDelivr 从这里取）和 `dist/orange-26.4.apk`（留档）
+1. 按 `26.Y.P → 26×100 + Y×10 + P` 算 versionCode，改 `app/build.gradle.kts`
+2. `assembleStandardRelease`（本机 8GB 内存，脚本里已经把堆限制在 2g，R8 约 13 分钟）
+3. 把 APK 复制成 `update/orange.apk`（电视从这里取）和 `dist/orange-26.4.apk`（留档）
 4. 写 `update/version.json`
-5. `git commit && git push`
-6. 有 `gh` 就顺手发 GitHub Release（没有的话会提示你去网页传）
-7. 刷 jsDelivr 缓存
+5. `git commit && git push`（走 SSH，不需要令牌）
+6. 有 `gh` 就顺手发 GitHub Release，没有就跳过——**发布不需要 Release，push 就够了**
+7. 通过中转读一次线上的 `version.json`，确认电视能看到新版本号
 
 ### version.json
 
 ```json
 {
   "version": "26.4",
-  "apk": "https://cdn.jsdelivr.net/gh/你的用户名/仓库名@main/update/orange.apk",
+  "apk": "https://gh-proxy.com/https://raw.githubusercontent.com/你的用户名/仓库名/main/update/orange.apk",
   "notes": [
     "打赏页支持长按返回键关闭",
     "一键优化更懂后台进程"
@@ -139,8 +139,8 @@ JSON 没写 `apk` 时的兜底。
 ### 发布前
 
 - 改 `versionCode` 单调递增，否则电视判定「不比现在新」而拒绝。
-- 刚推送时 jsDelivr 有缓存；脚本会调 purge 接口，没生效最多等 12 小时。
-  要立刻验证：`adb shell am broadcast -a app.orange.tv.CONFIG -n app.orange.tv/app.orchard.tv.guard.ConfigReceiver --ez check_update true`
+- 电视的检查节奏：开机 / 回到桌面时查一次，**3 小时内不重复**；打开控制中心时门限是
+  **10 分钟**。所以发完版想马上在电视上看到，进一次控制中心即可，不用等 3 小时。
 
 ---
 

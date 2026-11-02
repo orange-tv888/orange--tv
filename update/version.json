@@ -1,7 +1,8 @@
 {
-  "version": "26.3.7",
+  "version": "26.4",
   "apk": "https://gh-proxy.com/https://raw.githubusercontent.com/orange-tv888/orange--tv/main/update/orange.apk",
   "notes": [
-    "更新源改走国内可访问的通道"
+    "自动更新已接通，以后新版在电视上直接安装",
+    "更新检查改走国内可访问的通道"
   ]
 }
