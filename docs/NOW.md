@@ -8,14 +8,17 @@
 
 ## 进行中
 
-无。上一个需求 `26.4.2-boot-intro` 已发版，复盘见 `docs/retro/26.4.2.md`。
+无。`26.4.3-release-hardening`（发版脚本收口）已完成实现与 QA，见 `docs/spec/26.4.3-release-hardening.md`、
+`docs/qa/26.4.3-release-hardening.md`。**工具改动不升版本号、不重发 APK。**
 
 ## 下一步候选
 
 | 候选 | 档 | 状态 |
 |---|---|---|
+| 下次发版时验证 `release.sh` 判据 4/5/6（哈希、安装包重打、origin/main） | S | 待真发版 |
 | 真机冷启动观感确认（动画 3.6s vs 遥控器 3.4s 要不要再压） | S | 等用户关机开机后给反馈 |
-| `tools/dev.sh` + `tools/sheet.py`（构建/装机/检查/拼图） | M | 未立项 |
+| `tools/dev.sh`（构建/装机/检查一条命令） | M | 未立项 |
+| `tools/sheet.py`（截图拼图，省看图 token） | M | 未立项 |
 | 更新包体积（每次发版仓库 +3MB） | M | 未立项，只是隐患 |
 
 ## 阻塞
@@ -24,5 +27,6 @@
 
 ## 已知隐患
 
-- `dist/orange-newtv-setup.zip` 里的 APK 必须跟着每次发版重打，否则发给新用户的是旧版（26.4.2 已重打）。
+- `release.sh` 判据 4/5/6 尚未在真实发版里跑过（26.4.3 只做了 `--check` 与单点验证），下次发版第一步先跑 `--check`。
 - 本机 SSH 22 端口到 GitHub 常年不通，push 走 443（`release.sh` 已内置兜底）。
+- 每次发版 `update/orange.apk` 覆盖写，仓库历史里会累计约 3MB/版。
