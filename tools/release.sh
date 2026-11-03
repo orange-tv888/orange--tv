@@ -89,7 +89,14 @@ cat update/version.json | /usr/bin/sed 's/^/    /'
 # ---- 5. 提交 ----
 git add -A
 git commit -q -m "Orange $VER" || note "没有改动可提交"
-git push -q || die "git push 失败（先确认远端和凭据）"
+# 22 端口在国内经常被掐断（Connection closed / 超时）。GitHub 官方留了 ssh.github.com:443 备用通道，
+# 直连失败就退到那里；两条都不通才是真的网络或密钥问题。
+if ! git push -q; then
+    note "22 端口不通，改走 ssh.github.com:443"
+    GIT_SSH_COMMAND="ssh -p 443 -o StrictHostKeyChecking=accept-new -o UserKnownHostsFile=/tmp/known_hosts_orange" \
+        git push -q "ssh://git@ssh.github.com:443/$REPO.git" HEAD:main \
+        || die "git push 失败（22 和 443 都不通，检查网络与密钥）"
+fi
 COMMIT=$(git rev-parse --short HEAD)
 note "已推送 $COMMIT"
 
