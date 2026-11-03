@@ -621,9 +621,17 @@ object TileFaces {
         if (!focused) background = true
         try {
             // A few at a time, so the tiles appear in order (and Home's first frames keep a core).
-            for (batch in todo.chunked(BATCH)) {
+            // Larger batches after the first: every batch costs the grid a redraw, and on a cold
+            // start, while the remote is already in hand, those redraws are the stutter (40 apps
+            // were 8 redraws of the whole grid; now 5 + 12 + 12 + 11).
+            var at = 0
+            var size = BATCH
+            while (at < todo.size) {
+                val batch = todo.subList(at, minOf(at + size, todo.size))
                 batch.map { art -> async { runCatching { face(art.back, fw, fh, radius, rim) } } }.awaitAll()
                 withContext(Dispatchers.Main) { version++ }
+                at += batch.size
+                size = BATCH_AFTER
             }
         } finally {
             if (!focused) background = false
@@ -631,6 +639,7 @@ object TileFaces {
     }
 
     private const val BATCH = 5
+    private const val BATCH_AFTER = 12
 }
 
 private fun tileFace(back: ImageBitmap, w: Int, h: Int, radius: Float, rimWidth: Float): ImageBitmap {

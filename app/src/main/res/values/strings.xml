@@ -259,12 +259,12 @@
     <string name="ss_burn_in_hint">The time and the clocks move a little now and then, so nothing stays on the same pixels all night.</string>
     <string name="ss_burn_in_hint_off">Off: the screensaver stays completely still. An OLED screen left on one picture for hours may keep a mark of it.</string>
     <string name="donate_row">Support the author</string>
-    <string name="donate_row_hint">Orange is made by one person. A coffee keeps the updates coming.</string>
-    <string name="donate_chip">Buy a coffee</string>
+    <string name="donate_row_hint">If Orange works for you, an iced americano keeps its author going.</string>
+    <string name="donate_chip">Buy an iced americano</string>
     <string name="donate_author">Jimmycai</string>
     <string name="donate_role">Maker of Orange</string>
     <string name="donate_thanks">I hope Orange makes your TV a little easier to use.</string>
-    <string name="donate_thanks_more">If it helps, you are welcome to support future updates with a cup of coffee. Thank you.</string>
+    <string name="donate_thanks_more">If it helps, you are welcome to support future updates with an iced americano. Thank you.</string>
     <string name="donate_wechat">WeChat</string>
     <string name="donate_alipay">Alipay</string>
     <string name="donate_note">Donating is entirely voluntary and never holds a feature back.</string>

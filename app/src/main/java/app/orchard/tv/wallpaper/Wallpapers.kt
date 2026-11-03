@@ -386,11 +386,21 @@ object Wallpapers {
         runCatching {
             val key = File(bakedDir, "key").takeIf { it.exists() }?.readText() ?: return
             val home = BitmapFactory.decodeFile(File(bakedDir, "home.jpg").path) ?: return
-            val frost = BitmapFactory.decodeFile(File(bakedDir, "frost.png").path) ?: return
             if (home.width != screenW || home.height != screenH) return
             backdrop = home.asImageBitmap()
-            frosted = frost.asImageBitmap()
             bakedKey = key
+            // The frosted copy is only what the plate under the top row and the panels sample, and
+            // a 1080p PNG takes a cold start long enough to decode that Home's first frames waited
+            // on it (the main thread was 1.1 s of the 1.5 s a boot took to show tiles on
+            // MiTV-ASTP0). Read behind the first frame instead; if it cannot be read, bake afresh.
+            scope.launch {
+                val frost = withContext(Dispatchers.IO) {
+                    runCatching { BitmapFactory.decodeFile(File(bakedDir, "frost.png").path) }.getOrNull()
+                }
+                if (bakedKey != key) return@launch
+                if (frost != null && frost.width == screenW && frost.height == screenH) frosted = frost.asImageBitmap()
+                else { bakedKey = null; rebuildBackdrop() }
+            }
         }.onFailure { Log.w(TAG, "could not read the baked backdrop", it) }
     }
 

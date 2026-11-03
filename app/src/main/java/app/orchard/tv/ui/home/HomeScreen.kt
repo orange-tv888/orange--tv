@@ -415,9 +415,13 @@ fun HomeScreen(
         runCatching { requester(app.key).requestFocus() }
     }
 
-    // First focus once the apps are in; afterwards, put focus back wherever it was when an overlay closes.
-    LaunchedEffect(vm.loaded, overlay) {
-        if (!vm.loaded || overlay != Overlay.None) return@LaunchedEffect
+    // First focus as soon as there is a tile to take it, not once the whole list is read: reading
+    // every app takes a cold start a second or more on a TV that has just come on, and until the
+    // first tile existed the remote's presses landed on nothing (the apps only start to combine
+    // once the list is in). Afterwards, put focus back wherever it was when an overlay closes.
+    val tilesUp = apps.isNotEmpty()
+    LaunchedEffect(tilesUp, overlay) {
+        if (!tilesUp || overlay != Overlay.None) return@LaunchedEffect
         withFrameNanos { }
         val wanted = focusAfterOverlay
         focusAfterOverlay = null
@@ -449,8 +453,8 @@ fun HomeScreen(
         runCatching { requester(key).requestFocus() }
     }
     val windowFocused = LocalWindowInfo.current.isWindowFocused
-    LaunchedEffect(windowFocused, vm.homeResetPending, vm.loaded) {
-        if (windowFocused && vm.homeResetPending && vm.loaded) {
+    LaunchedEffect(windowFocused, vm.homeResetPending, tilesUp) {
+        if (windowFocused && vm.homeResetPending && tilesUp) {
             withFrameNanos { }
             dragged = false
             focusApp(0)
@@ -1087,5 +1091,12 @@ fun HomeScreen(
                 else -> null
             },
         )
+
+        // At the start of the app, the seconds the remote takes to register under a cover that
+        // says something: Home is already laid out beneath it, so the frame it lifts off is the
+        // one that answers the first press. Asked once per process, and only on a start.
+        var introDone by remember { mutableStateOf(false) }
+        val intro = remember { BootIntro.claim() }
+        if (intro && !introDone) BootWordIntro(onFinished = { introDone = true })
     }
 }

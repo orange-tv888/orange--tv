@@ -248,12 +248,12 @@
     <string name="ss_burn_in_hint">Время и часы время от времени слегка сдвигаются, чтобы за ночь ничего не осталось на одних и тех же пикселях.</string>
     <string name="ss_burn_in_hint_off">Выключено: заставка полностью неподвижна. Если OLED-экран часами показывает одну картину, на нём может остаться след.</string>
     <string name="donate_row">Поддержать автора</string>
-    <string name="donate_row_hint">Orange делает один человек. Чашка кофе помогает выходить обновлениям.</string>
-    <string name="donate_chip">Угостить кофе</string>
+    <string name="donate_row_hint">Если Orange вам по душе, угостите автора айс-американо.</string>
+    <string name="donate_chip">Угостить айс-американо</string>
     <string name="donate_author">Jimmycai</string>
     <string name="donate_role">Создатель Orange</string>
     <string name="donate_thanks">Надеюсь, Orange сделает ваш телевизор удобнее.</string>
-    <string name="donate_thanks_more">Если он вам полезен, вы можете поддержать обновления чашкой кофе. Большое спасибо.</string>
+    <string name="donate_thanks_more">Если он вам полезен, вы можете поддержать обновления чашкой айс-американо. Большое спасибо.</string>
     <string name="donate_wechat">WeChat</string>
     <string name="donate_alipay">Alipay</string>
     <string name="donate_note">Пожертвование — дело добровольное, ни одна функция не ограничена.</string>

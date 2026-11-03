@@ -706,6 +706,12 @@ class HomeGuardService : AccessibilityService() {
         // take-over in onCreate and the one at the connection are a few seconds apart, and the
         // second redid Home's resume (MiTV-MFTR0).
         if (last == null && SystemClock.uptimeMillis() - broughtBackAt < 30_000) return
+        // Bound after Aerial itself came up (a boot where Aerial is the Home the system started):
+        // no window change ever reached this service, so the front is not known here - and at
+        // power-on it is Aerial, not the launcher. Bringing Home back over itself paused it for
+        // nothing, and Home, which had just taken focus, lost it again while the owner was already
+        // pressing the remote (MiTV-ASTP0, 26.4.1: pause at 15.8 s into the boot, focus back at 16 s).
+        if (last == null && aerialResumed) return
         val stockInFront = last == null || last.first in stockHomes
         // Aerial is in front after a wake because the guard already brought it back when the stock
         // launcher showed, or because it survived standby; either way the input the TV starts on

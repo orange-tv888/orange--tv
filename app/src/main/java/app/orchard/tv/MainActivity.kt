@@ -57,6 +57,7 @@ import app.orchard.tv.apps.TileArtFactory
 import app.orchard.tv.guard.GuardSetup
 import app.orchard.tv.guard.HomeGuardService
 import app.orchard.tv.ui.home.HomeScreen
+import app.orchard.tv.ui.home.BootIntro
 import app.orchard.tv.ui.home.AerialStart
 import app.orchard.tv.ui.home.LiveFilm
 import app.orchard.tv.ui.home.asFocusedTile
@@ -210,12 +211,17 @@ class MainActivity : ComponentActivity() {
         }
         DiagLog.init(this)
         DiagLog.i("onCreate ${intent.action} restored=${savedInstanceState != null}; ${DiagLog.device()}")
+        // The piece Home plays over its first seconds needs to know a start from a return.
+        BootIntro.noteStart()
         hideSystemBars()
         // Unlocked at power-on: what the system kept. Unlocked under the locked window: nothing to
         // restore, and this is the boot's first real start.
         val fresh = savedInstanceState == null
         FontWarmup.start(this)
         val uhd = UhdCanvas.scale(this)
+        // What a boot spends before Home can draw a frame, in one line: the rest of the start is
+        // Compose's first composition, and the two together are the wait for the first tile.
+        val initsAt = SystemClock.uptimeMillis()
         Wallpapers.init(this)
         Weather.init(this)
         Updates.init(this)
@@ -228,6 +234,7 @@ class MainActivity : ComponentActivity() {
         // After the settings: the artwork's size follows the number of apps a row.
         TileArtFactory.useCanvasDensity(canvasDensity(resources.displayMetrics) * uhd)
         Sounds.init(this)
+        DiagLog.i("start: module inits ${SystemClock.uptimeMillis() - initsAt} ms")
         val reducedMotion = Settings.Global.getFloat(contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
 
         // The home screen paints every pixel itself; a window background would be one more

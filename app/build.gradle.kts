@@ -24,11 +24,11 @@ android {
         minSdk = 21
         targetSdk = 34
         // Orange counts its own way: 26.Y.P — 26 = year, Y = major release of the year, P = patch
-        // (26.3.1 is the first patch of 26.3); ten patches roll Y up one. Code = Y*10 + P, so
-        // 26.3.0 is 2630. The official 1.75 / 96 line is archived in dist/official-1.75 and no
+        // (26.4.2 is the second patch of 26.4); ten patches roll Y up one. Code = YEAR*100 + Y*10 + P,
+        // so 26.4.2 is 2642. The official 1.75 / 96 line is archived in dist/official-1.75 and no
         // longer compared against.
-        versionCode = 2641
-        versionName = "26.4.1"
+        versionCode = 2642
+        versionName = "26.4.2"
         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
         // see system/DiagLog.kt.
         val diag = project.hasProperty("diag")

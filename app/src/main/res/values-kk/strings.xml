@@ -248,12 +248,12 @@
     <string name="ss_burn_in_hint">Уақыт пен сағаттар түні бойы бір пиксельде тұрмас үшін анда-санда сәл жылжиды.</string>
     <string name="ss_burn_in_hint_off">Өшірулі: экран қорғанышы мүлдем қозғалмайды. OLED экран бір кескінді сағаттап көрсетсе, оның ізі қалуы мүмкін.</string>
     <string name="donate_row">Авторды қолдау</string>
-    <string name="donate_row_hint">Orange-ды бір адам жасайды. Бір шыны кофе жаңартуларға көмектеседі.</string>
-    <string name="donate_chip">Кофе алу</string>
+    <string name="donate_row_hint">Orange ұнаса, авторға мұзды американо сыйлаңыз.</string>
+    <string name="donate_chip">Мұзды американо алу</string>
     <string name="donate_author">Jimmycai</string>
     <string name="donate_role">Orange авторы</string>
     <string name="donate_thanks">Orange теледидарыңызды сәл ыңғайлырақ етеді деп үміттенемін.</string>
-    <string name="donate_thanks_more">Егер пайдалы болса, жаңартуларды бір шыны кофемен қолдай аласыз. Көп рахмет.</string>
+    <string name="donate_thanks_more">Егер пайдалы болса, жаңартуларды бір шыны мұзды американомен қолдай аласыз. Көп рахмет.</string>
     <string name="donate_wechat">WeChat</string>
     <string name="donate_alipay">Alipay</string>
     <string name="donate_note">Қайырымдылық — толығымен ерікті, ешбір мүмкіндік шектелмейді.</string>
