@@ -2,6 +2,15 @@
 
 tvOS 风格的 Android TV 桌面，面向国内电视（小米、TCL 等），Kotlin + Jetpack Compose。
 
+## 工作流程（Orange 分支，先读这段）
+
+需求 → 方案 → 实现 → QA → 发版 → 复盘，四个角色六道门禁，**按改动大小分 L / M / S 三档**：
+`docs/process/WORKFLOW.md`。开工先看一页看板 `docs/NOW.md`；开需求用
+`tools/spec.sh new <L|M|S> <id> "标题"`。
+
+环境、构建三档耗时、电视与推送的坑：`docs/process/ENV.md`（新 session 先扫一遍，能省半小时）。
+发过版之后 24 小时内写 `docs/retro/<version>.md`。
+
 开始任何工作前先读：
 1. `docs/HANDOFF.md`：现状、操作方式，以及**必须遵守**的规则
 2. `docs/ARCHITECTURE.md`：代码结构
