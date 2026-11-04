@@ -1,6 +1,6 @@
 # Orange 的版本更新
 
-电视上发现新版 → 点一下 → 下载 → 装好，全在这一套里。代码大部分沿用上游 Aerial，
+电视上发现新版 → 点一下 → 下载 → 装好，全在这一套里。代码大部分沿用上游 Orange，
 Orange 只是把它的身份和地址换成了自己的。
 
 ---
@@ -87,7 +87,7 @@ JSON 没写 `apk` 时的兜底。
 
 2. 建一个 GitHub 仓库，把工程推上去。
 
-3. 改 `app/src/main/java/app/orchard/tv/update/UpdateSource.kt` 里的 `REPO`：
+3. 改 `app/src/main/java/app/orange/tv/update/UpdateSource.kt` 里的 `REPO`：
 
    ```kotlin
    const val REPO = "你的用户名/仓库名"
@@ -171,7 +171,7 @@ JSON 没写 `apk` 时的兜底。
   确认页，绕不过去；只有 Android 12+ 才有 `USER_ACTION_NOT_REQUIRED` 可以真正静默。
   系统级静默安装要 `INSTALL_PACKAGES`（系统签名或 root），普通应用拿不到。
 - **26.3.x 及更早的版本收不到提示**：那些版本的 `Updates.official` 是 false（当时
-  `PACKAGE` 还是 `app.orchard.tv`）。需要一个手动安装的版本跨过去，之后才进入自动更新。
+  `PACKAGE` 还是 `app.orange.tv`）。需要一个手动安装的版本跨过去，之后才进入自动更新。
 - **仓库会慢慢变大**：`update/orange.apk` 每次覆盖，但 git 历史保留旧 blob，
   大约每个版本 3 MB。二三十个版本后可以 squash 一次历史。
 - **降级不可用**：versionCode 检查会拒绝旧版。要回退只能卸载重装（会丢设置）。

@@ -15,6 +15,11 @@
     <string name="cc_home_guarded">Home Guard включён</string>
     <string name="cc_home_not_default">Не главный экран по умолчанию</string>
     <string name="cc_setup_title">Сделайте Orange главным экраном</string>
+    <string name="cc_about">О приложении</string>
+    <string name="cc_about_title">О приложении · Лицензии</string>
+    <string name="cc_about_origin">Orange — изменённая версия Aerial, выпущенного под лицензией MIT. Уведомление об авторских правах и текст лицензии сохранены здесь полностью.</string>
+    <string name="cc_about_components">Сторонние компоненты</string>
+    <string name="cc_about_licence">Текст лицензии</string>
     <string name="cc_setup_body">Если Orange установлен только из APK, он открывается, но кнопка «Домой», включение и выход из ожидания по-прежнему ведут в прежний лаунчер.</string>
     <string name="cc_setup_guard">Включить Home Guard</string>
     <string name="cc_setup_guard_where">Специальные возможности</string>

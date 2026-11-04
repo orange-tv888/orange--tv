@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Frame times of Aerial on a TV, per operation: presses remote keys over ADB, then reads
-`dumpsys gfxinfo app.orchard.tv framestats`.
+"""Frame times of Orange on a TV, per operation: presses remote keys over ADB, then reads
+`dumpsys gfxinfo app.orange.tv framestats`.
 
   python3 tools/perf.py <adb serial> [scenario ...]        e.g. 192.168.1.73:5555 row cc
 
@@ -10,8 +10,8 @@ frames since the reset) and, from the last 120 frames' timestamps: med / q90 / m
 done), ui (vsync to the main thread handing over), rt (render thread) and gpu (GPU after swap;
 Android 9+). A frame budget at 60 Hz is 16.7 ms; on a weak TV GPU the gpu column decides.
 
-Before measuring: a release build, compiled (`cmd package compile -m speed -f app.orchard.tv`
-after Aerial has started once), and Home in front. `wallpaper` reaches Personalize as Control
+Before measuring: a release build, compiled (`cmd package compile -m speed -f app.orange.tv`
+after Orange has started once), and Home in front. `wallpaper` reaches Personalize as Control
 Center lays out on Xiaomi MiTV-MFTR0 (three rows down from Inputs: volume, brightness,
 Personalize); check with a screenshot on other TVs. It only moves focus over the wallpaper cards,
 never presses OK on them. Each `input keyevent` starts a Java process on the TV, which a 2-core
@@ -19,7 +19,7 @@ box feels; compare runs on the same TV only.
 """
 import re, statistics, subprocess, sys, time
 
-PKG = "app.orchard.tv"
+PKG = "app.orange.tv"
 S = sys.argv[1]
 ONLY = sys.argv[2:]
 

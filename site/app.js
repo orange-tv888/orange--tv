@@ -1,19 +1,21 @@
 // Shared by the Chinese (/) and English (/en/) pages. Each page sets window.T with its own words.
 (() => {
   const T = window.T;
-  // The site serves the install script, the agent guide and the APKs itself (tools/deploy-site.sh),
-  // since GitHub is slow or blocked in China. Previews elsewhere point at the live site.
+  // When the site is deployed (tools/deploy-site.sh) it serves the install script, the agent guide
+  // and the APK itself, since GitHub is slow or blocked in China. Anywhere else — a preview, or the
+  // repo browsed on GitHub — point at this repository instead of anybody else's site.
   const onSite = location.protocol.startsWith('http') && !/github|localhost|127\.0\.0\.1/.test(location.hostname);
-  const SITE = onSite ? location.origin : 'https://aerial.qust.me';
-  const SCRIPT = `${SITE}/install.sh`;
-  const GUIDE = SITE + T.guide;
+  const RAW = 'https://raw.githubusercontent.com/orange-tv888/orange--tv/main';
+  const SITE = onSite ? location.origin : RAW;
+  const SCRIPT = onSite ? `${SITE}/install.sh` : `${RAW}/tools/install.sh`;
+  const GUIDE = onSite ? SITE + T.guide : RAW + '/site' + T.guide;
 
   const $ = s => document.querySelector(s);
   const store = { get(k) { try { return localStorage.getItem(k); } catch (e) { return null; } },
                   set(k, v) { try { localStorage.setItem(k, v); } catch (e) {} } };
 
   // Picking a language by hand outranks the browser's language from then on.
-  document.querySelectorAll('a[data-lang]').forEach(a => a.addEventListener('click', () => store.set('aerial-lang', a.dataset.lang)));
+  document.querySelectorAll('a[data-lang]').forEach(a => a.addEventListener('click', () => store.set('orange-lang', a.dataset.lang)));
 
   function render() {
     const ip = $('#ip').value.trim() || T.ip;
@@ -24,17 +26,17 @@
     $('#restoreprompt').textContent = T.restore(ip, GUIDE);
     $('#manualcmd').textContent =
 `adb connect ${ip}:5555
-adb install -r aerial-standard.apk
-adb shell pm grant app.orchard.tv android.permission.WRITE_SECURE_SETTINGS
-adb shell cmd notification allow_listener app.orchard.tv/app.orchard.tv.guard.RevivalListener
-adb shell appops set app.orchard.tv SYSTEM_ALERT_WINDOW allow
-adb shell appops set app.orchard.tv APP_AUTO_START allow   # ${T.tclOnly}
-adb shell am start -n app.orchard.tv/.MainActivity`;
+adb install -r orange.apk
+adb shell pm grant app.orange.tv android.permission.WRITE_SECURE_SETTINGS
+adb shell cmd notification allow_listener app.orange.tv/app.orange.tv.guard.RevivalListener
+adb shell appops set app.orange.tv SYSTEM_ALERT_WINDOW allow
+adb shell appops set app.orange.tv APP_AUTO_START allow   # ${T.tclOnly}
+adb shell am start -n app.orange.tv/.MainActivity`;
     $('#adaptprompt').textContent = T.adapt(ip, SITE + T.adaptGuide);
   }
 
-  $('#ip').value = store.get('aerial-ip') || '';
-  $('#ip').addEventListener('input', () => { store.set('aerial-ip', $('#ip').value.trim()); render(); });
+  $('#ip').value = store.get('orange-ip') || '';
+  $('#ip').addEventListener('input', () => { store.set('orange-ip', $('#ip').value.trim()); render(); });
   $('#keep').addEventListener('change', render);
   render();
 
@@ -58,7 +60,7 @@ adb shell am start -n app.orchard.tv/.MainActivity`;
     b.textContent = T.copied; clearTimeout(b.timer); b.timer = setTimeout(() => b.textContent = T.copy, 1600);
   }));
 
-  // Before/after: the TV's own launcher on the right of the line, Aerial on the left. The line
+  // Before/after: the TV's own launcher on the right of the line, Orange on the left. The line
   // follows the pointer while it is over the TV, eased so it glides rather than jumps.
   (() => {
     const box = $('#compare');
@@ -123,7 +125,7 @@ adb shell am start -n app.orchard.tv/.MainActivity`;
     });
 
     set(0);
-    // The opening wipe takes the TV's launcher away and rests on Aerial.
+    // The opening wipe takes the TV's launcher away and rests on Orange.
     if (reduced) { set(1); return; }
     const start = () => setTimeout(() => { if (!touched) wipe(1, 2200); }, 600);
     const seen = new IntersectionObserver(es => { if (es[0].isIntersecting) { seen.disconnect(); start(); } }, { threshold: 0.5 });

@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180">
-  <!-- TV banner (320 x 180 dp). tools/render-brand.py draws the "Aerial" wordmark on top. -->
+  <!-- TV banner (320 x 180 dp). tools/render-brand.py draws the "Orange" wordmark on top. -->
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="320" y2="180" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#2FD0A5"/>
-      <stop offset="1" stop-color="#5B5BF0"/>
+      <stop offset="0" stop-color="#ffa733"/>
+      <stop offset="1" stop-color="#ff5e1a"/>
     </linearGradient>
   </defs>
   <rect width="320" height="180" fill="url(#bg)"/>

@@ -9,8 +9,8 @@
 #
 # Home, Control Center and the panels are all Aerial's own code on top of Compose, and all of it
 # runs within seconds of a start, so the whole of both is marked hot.
-HSPLapp/orchard/tv/**->**(**)**
-Lapp/orchard/tv/**;
+HSPLapp/orange/tv/**->**(**)**
+Lapp/orange/tv/**;
 HSPLandroidx/compose/**->**(**)**
 Landroidx/compose/**;
 HSPLandroidx/activity/**->**(**)**

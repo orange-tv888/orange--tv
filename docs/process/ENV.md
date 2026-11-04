@@ -34,7 +34,7 @@
 - 电视侧检查更新的门限：控制中心 10 分钟、首页 3 小时（`PANEL_MAX_AGE_MS` / `MAX_AGE_MS`）。
 - **签名密钥**：`local/aerial-release.jks` + `signing.properties`，**只在 `local/`（已 gitignore）**。
   加密备份在**仓库外** `../key-backup/orange-keys-20261104.dmg`（AES-256，口令不在该目录）。
-  证书 SHA-256 `AE:94:9B:3E…8D:7D:0B`（DN `CN=JC Aerial`），有效期至 2056-10-23。
+  证书 SHA-256 `AE:94:9B:3E…8D:7D:0B`（DN `CN=JC Orange`），有效期至 2056-10-23。
   丢了 = 已装设备永远无法更新；**永远不要重新生成密钥**。
 - `git add -A` 会把工作区里的截图等无关文件一起提交，发版前先 `git status` 看一眼。
 

@@ -2,7 +2,8 @@
 
 > 状态：**准备中，未授权发布**。自查 2026-11-03 23:40，五条拍板与执行 2026-11-04 09:20。
 > 用户指令：「在我确认授权发布前，只允许做正式发布前的准备工作，包括自查，整改，列出清单，校对清单。」
-> 2026-11-04：用户对五条待定项全部采纳建议，**已执行**（见文末「五条拍板与执行」）。待定项归零，阻塞仍是 9 条。
+> 2026-11-04 11:20：**品牌归位与许可补齐完成**（`26.5.0-rebrand`）—— A2/A3/A4 补齐、F1/F2 改完、D2 关掉上游图标库、
+> D5 隐私说明落地、C6 二维码改指仓库。⛔ 由 9 条降到 1 条（只剩 C5 这个机制约束），✅ 由 26 升到 35。
 
 ## 怎么读这张表
 
@@ -22,21 +23,22 @@
 
 | 类别 | 条数 | ⛔ 阻塞 | ⚠️ 待改 | ❓ 待你定 | ✅ 已通过 | ⬜ 未验 |
 |---|---|---|---|---|---|---|
-| A 法务与许可 | 7 | 3 | 2 | 0 | 2 | 0 |
+| A 法务与许可 | 7 | 0 | 1 | 0 | 6 | 0 |
 | B 构建与产物 | 9 | 0 | 0 | 0 | 8 | 1 |
-| C 更新通道 | 7 | 2 | 0 | 0 | 4 | 1 |
-| D 隐私与联网 | 6 | 2 | 1 | 0 | 2 | 1 |
+| C 更新通道 | 7 | 1 | 0 | 0 | 5 | 1 |
+| D 隐私与联网 | 6 | 0 | 0 | 0 | 5 | 1 |
 | E 权限 | 5 | 0 | 0 | 0 | 4 | 1 |
-| F 品牌与门面 | 4 | 2 | 0 | 0 | 2 | 0 |
+| F 品牌与门面 | 4 | 0 | 1 | 0 | 3 | 0 |
 | G 支持与回滚 | 4 | 0 | 0 | 0 | 4 | 0 |
 | H 发布动作（授权后才做） | 6 | — | — | — | — | 6 |
-| **合计** | **48** | **9** | **3** | **0** | **26** | **10** |
+| **合计** | **48** | **1** | **2** | **0** | **35** | **10** |
 
-> 这张表由脚本按条目里的实际标记统计得出，不是估的（48 = 9+3+0+26+10）。
+> 这张表由脚本按条目里的实际标记统计得出，不是估的（48 = 1+2+0+35+10）。
 
-**一句话结论**：代码层面基本就绪（构建、签名、更新包的可信校验都在）；**卡住发布的是三件非代码的事** ——
-许可合规（A2/A3/A4）、门面仍是上游 Aerial（F1/F2）、以及"手机扫码更新"指向一个 404 页面（C6）。
-外加一条要你点头的取舍（D2 图标库域名）。
+**一句话结论**：许可合规与品牌门面已做完（A 段 6/7、F 段 3/4），代码层面就绪。
+**剩下的唯一 ⛔ 是 C5**：仓库必须保持公开——这是更新机制的约束，不是待修项，你已知情。
+两条 ⚠️ 分别是 A5（截图待重拍）与 F2（官网截图，不发官网就不阻塞）。
+四条 ⬜ 里 B8 与 C7 这次发版能验掉，D6/E5 是没来得及逐条审的代码复核。
 
 ---
 
@@ -44,13 +46,13 @@
 
 | ID | 条目 | 判据 | 现状 | 证据 | 归属 | 阻塞 |
 |---|---|---|---|---|---|---|
-| A1 | LICENSE 保留上游 MIT 版权行 | `LICENSE` 内 `Copyright (c) 2026 pengchujin` 仍在，且追加了自己的版权行 | ⚠️ 只有上游一行 | `head -5 LICENSE` | 你拍板署名用哪个名字，我改 | 否 |
-| A2 | App 内可查开源许可（MIT 要求分发时随附） | 安装后能在设置/关于里看到 MIT 与第三方许可全文 | ⛔ 不存在 | `ls app/src/main/assets` 只有 `aerials.json / cities-cn.tsv / devices.json / web`，无许可文本；全局无"关于/许可"页 | 我（另立 S 档，需编译验证） | **是** |
-| A3 | 第三方组件许可清单齐备 | 有 `THIRD-PARTY.md` 列出 Compose/Media3(Apache-2.0)、nanohttpd(BSD)、zxing(Apache-2.0)、Inter(OFL)、Kotlin 等 | ⛔ 不存在 | 依赖见 `app/build.gradle.kts:105-127`；`FONT-LICENSE-OFL.txt` 在仓库根但**未随包** | 我 | **是** |
-| A4 | 标明"基于 Aerial (MIT) 修改" | README 或关于页有出处说明 | ⛔ 没有 | `grep Aerial README.md` 只有上游原文，无"衍生自"表述 | 我 | **是** |
-| A5 | 素材权属：截图与图标 | 发布用图不含他人商标/桌面截图 | ⚠️ | `site/img/stock-xiaomi.jpg`（小米 PatchWall 截图做对比）、`docs/brand/icon.png`（上游图标，13KB） | 你定是否保留对比图 | 否 |
-| A6 | 签名证书主体名 | 证书 DN 不含他人品牌 | ✅ 已确认但**无法改** | `apksigner verify --print-certs` → `CN=JC Aerial, OU=Personal, O=JC, L=Beijing, C=CN`。换证书=签名变更=老用户无法覆盖安装，只能接受 | 记录 | 否 |
-| A7 | 包名归属 | `app.orange.tv` 是否为你可主张的标识 | ✅ 保留不改 | **决定 2026-11-04：不改。** 改 `applicationId` = 一个新应用，已装设备（这台电视 + 已发的 26.4.2）永远收不到更新；`namespace` 的 `app.orchard.tv` 与包名不一致只是代码组织问题，不动。商标风险仅体现在“不上应用商店、不拿它做品牌宣传” | 已定 | 否 |
+| A1 | LICENSE 保留上游 MIT 版权行 | `LICENSE` 内 `Copyright (c) 2026 pengchujin` 仍在，且追加了自己的版权行 | ✅ 两行 | `head -5 LICENSE` → `pengchujin` + `JC Aerial — modifications in Orange`（2026-11-04 按拍板用 `JC Aerial`） | 完成 | 否 |
+| A2 | App 内可查开源许可（MIT 要求分发时随附） | 安装后能在设置/关于里看到 MIT 与第三方许可全文 | ✅ 控制中心 → 关于 · 开源许可 | `ControlCenter.AboutPage`；`unzip -l` 见 `assets/licences/{LICENSE.txt,THIRD-PARTY.md,FONT-LICENSE-OFL.txt}`；真机截图 `docs/qa/26.5.0-rebrand.md` | 完成 | 否 |
+| A3 | 第三方组件许可清单齐备 | 有 `THIRD-PARTY.md` 列出 Compose/Media3(Apache-2.0)、nanohttpd(BSD)、zxing(Apache-2.0)、Inter(OFL)、Kotlin 等 | ✅ 仓库根 `THIRD-PARTY.md`，并随包 | 13 条运行期依赖 + 2 条仅测试；由 `app/build.gradle.kts` 的 `copyLicenceAssets` 复制进 assets，改一处即同步 | 完成 | 否 |
+| A4 | 标明"基于 Aerial (MIT) 修改" | README 或关于页有出处说明 | ✅ README「许可」段 + 应用内关于页首段 | `README.md`「**来源**」；`values*/strings.xml` 的 `cc_about_origin`（五语） | 完成 | 否 |
+| A5 | 素材权属：截图与图标 | 发布用图不含他人商标/桌面截图 | ⚠️ 图标与 TV banner 已重绘，官网截图待重拍 | 图标：`ic_launcher_background.xml` 与 `docs/brand/icon.svg` 由绿紫改为橙 `#FFA733→#FF5E1A`，5 个 mipmap PNG 重渲染；TV banner `drawable-{xhdpi,xxhdpi}/banner.png` 原为绿紫渐变 + "Aerial" 字标，已重绘为橙 + "Orange"；**`site/img/control-center.jpg` 里能直接看到 "Aerial 1.65"**，属 F2 待重拍 | 我 | 否 |
+| A6 | 签名证书主体名 | 证书 DN 不含他人品牌 | ✅ 已确认但**无法改** | `apksigner verify --print-certs` → `CN=JC Aerial, OU=Personal, O=JC, L=Beijing, C=CN`。换证书=签名变更=老用户无法覆盖安装，只能接受；证书装完不可见，不构成展示性使用 | 记录 | 否 |
+| A7 | 包名归属 | `applicationId` 与 `namespace` 一致 | ✅ 已统一 | **2026-11-04 改判**：`applicationId` 仍为 `app.orange.tv`（不动，动了就是另一个应用）；`namespace` 由 `app.orchard.tv` 迁到 `app.orange.tv`，109 个源文件与 `app/`、`lite/` 源码树同步移动。组件名变为 `app.orange.tv/app.orange.tv.MainActivity`；签名、覆盖安装、更新通道不受影响 | 完成 | 否 |
 
 ## B 构建与产物
 
@@ -75,19 +77,19 @@
 | C3 | 更新清单与 APK 在仓库里 | `update/version.json`、`update/orange.apk` 存在且版本对得上 | ✅ | `version.json` 写 `26.4.2`；`orange.apk` 3.1M | — | 否 |
 | C4 | 镜像顺序经过实测 | ghproxy.net 优先，其余兜底 | ✅ | `UpdateSource.kt:41` 两个镜像 + 直连 + jsDelivr，注释说明顺序是量出来的 | — | 否 |
 | C5 | 仓库必须保持公开 | 私有则更新 404 | ⛔ 这是机制约束 | 更新读 `raw.githubusercontent.com/.../main/update/*`；转私有即断 | **你**（知情确认） | **是（约束）** |
-| C6 | "手机扫码更新"的二维码可达 | 扫出来是有效页面 | ⛔ **实测 404** | 二维码目标 `github.com/orange-tv888/orange--tv/releases/latest`（`ControlCenter.kt:377,466`）；API 查 `releases/latest` → **HTTP 404**，因 Releases 为空 | 我（发布时必须同建 Release，或改二维码指向） | **是** |
+| C6 | "手机扫码更新"的二维码可达 | 扫出来是有效页面 | ✅ 已改指向仓库主页 | 原来指 `releases/latest`，API 实测 **HTTP 404**（Releases 为空）；2026-11-04 改为 `github.com/orange-tv888/orange--tv`，仓库页带安装命令与 APK 路径 | 完成 | 否 |
 | C7 | 自更新在 Orange 上真机跑通过 | 点"检查更新"→下载→安装成功 | ⬜ 未验 | 一直用手动 `adb install -r`，自更新路径未在 Orange 上走过 | 我 | 否 |
 
 ## D 隐私与联网
 
 | ID | 条目 | 判据 | 现状 | 证据 | 归属 | 阻塞 |
 |---|---|---|---|---|---|---|
-| D1 | 全部外发请求有清单 | 逐条列出目标域与用途 | ✅ 已列 | 更新：ghproxy/raw/jsdelivr；天气：`ipinfo.io`、`api.open-meteo.com`、`geocoding-api.open-meteo.com`；壁纸：`cn.bing.com`；图标：`aerial.qust.me` | — | 否 |
-| D2 | 是否向第三方暴露 IP | 有则披露，或去掉 | ⛔ `aerial.qust.me` 是**上游作者的域名** | `IconLibrary.kt:35`。发布后每个 Orange 用户的 IP 都会打到第三方服务器，而那不是你 | **你**（改自建 CDN / 关掉 / 保留） | **是** |
-| D3 | `ipinfo.io` 获取公网 IP 用于天气定位 | 有则写进隐私说明 | ⚠️ 会在无提示下外发 IP | `Weather.kt:123` | 我（写披露） | 否 |
+| D1 | 全部外发请求有清单 | 逐条列出目标域与用途 | ✅ 已列 | 更新：ghproxy/gh-proxy/raw/jsdelivr；天气：`ipinfo.io`、`api.open-meteo.com`、`geocoding-api.open-meteo.com`；壁纸：`cn.bing.com`；影片：`sylvan.apple.com`；图标：~~`aerial.qust.me`~~（已关）。逐条见 `docs/PRIVACY.md` | 完成 | 否 |
+| D2 | 是否向第三方暴露 IP | 有则披露，或去掉 | ✅ 已关掉 | `IconLibrary.ENABLED = false`（26.5.0）。该域名属上游作者，开着会让每台 Orange 的 IP 与安装列表打到别人的服务器。磁贴回退到应用自身图标；将来把 `BASE` 换成自建 CDN 再打开 `ENABLED` 即可 | 完成 | 否 |
+| D3 | `ipinfo.io` 获取公网 IP 用于天气定位 | 有则写进隐私说明 | ✅ 已披露 | `docs/PRIVACY.md` 第二节：目标域、发出什么、何时、能否关；并说明只到城市级、坐标只存本机 | 完成 | 否 |
 | D4 | 无统计/无广告/无账号 | 依赖与代码里无 SDK | ✅ | `app/build.gradle.kts:105-127` 无统计类依赖；全量 URL grep 无上报端点 | — | 否 |
-| D5 | 隐私说明文档 | 存在且与实际行为一致 | ⛔ 不存在 | `docs/` 下无隐私文件 | 我 | **是** |
-| D6 | 局域网手机配网监听的暴露面 | 仅局域网、可关闭、有鉴权或一次性 | ⬜ 未审 | `PhoneServer`（nanohttpd 2.3.1） | 我 | 否 |
+| D5 | 隐私说明文档 | 存在且与实际行为一致 | ✅ `docs/PRIVACY.md` | 六节：不收集什么、联网逐条、数据存哪、权限用途、第三方、改动方式；按 `26.5.0` 核对 | 完成 | 否 |
+| D6 | 局域网手机配网监听的暴露面 | 仅局域网、可关闭、有鉴权或一次性 | ⬜ 未审 | `PhoneServer`（nanohttpd 2.3.1）；隐私说明已写明「只在你自己的局域网内、不经过互联网、不打开就不启动」，代码层未逐个审 | 我 | 否 |
 
 ## E 权限
 
@@ -103,9 +105,9 @@
 
 | ID | 条目 | 判据 | 现状 | 证据 | 归属 | 阻塞 |
 |---|---|---|---|---|---|---|
-| F1 | README 描述的是 Orange 而非 Aerial | 标题、简介、下载按钮指向本项目 | ⛔ 全是上游 | `README.md` 标题 `# Aerial`；徽章指向 `pengchujin/aerial-tv/releases/latest` | 我 | **是** |
-| F2 | 官网/截图与界面一致 | `site/` 品牌替换，截图重拍 | ⛔ `site/index.html` 36 处上游品牌；截图为旧界面 | `grep -c Aerial site/index.html` = 36 | 我 | **是** |
-| F3 | 应用名与图标 | `app_name=Orange`，图标为自有 | ✅ 名称已换，图标待定 | `strings.xml:3` `Orange`；图标见 A5 | — | 否 |
+| F1 | README 描述的是 Orange 而非 Aerial | 标题、简介、下载按钮指向本项目 | ✅ 标题 `# Orange`，下载指向 `update/orange.apk` | 全文 `Aerial` 0 处；上游 `aerial.qust.me` 0 处；下载/安装/反馈入口全部改为本仓库；末尾新增「来源」段履行署名 | 完成 | 否 |
+| F2 | 官网/截图与界面一致 | `site/` 品牌替换，截图重拍 | ⚠️ 品牌已换，截图未重拍 | `site/` 内 `Aerial` 仅剩组件名 `AerialDream`（正确保留）；`aerial.qust.me` 0 处、`pengchujin` 0 处；13 张截图里 `control-center.jpg` 拍到旧版界面右下角的 "Aerial 1.65"，`home.jpg` 等其余图逐张看过、无品牌字样。站点当前不对外发布，故不阻塞 | 我（需真机重拍） | 否 |
+| F3 | 应用名与图标 | `app_name=Orange`，图标为自有 | ✅ 名称已换，图标已改橙 | `strings.xml:3` `Orange`；图标渐变改 `#FFA733→#FF5E1A`，见 A5 | 完成 | 否 |
 | F4 | 更新说明模板 | 三条以内、说人话、不含内部术语 | ✅ | `26.4.2` 的 `version.json` 三条即为范例 | — | 否 |
 
 ## G 支持与回滚

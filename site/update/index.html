@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>升级 Aerial · Update Aerial</title>
+<title>升级 Orange · Update Orange</title>
 <meta name="robots" content="noindex">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="../favicon.svg" type="image/svg+xml">
@@ -71,81 +71,81 @@
   </div>
 
   <p class="note" data-t="keeps" style="margin:22px 4px 0"></p>
-  <p class="note" style="margin:8px 4px 0"><a href="https://github.com/pengchujin/aerial-tv/releases/latest" data-t="notes"></a></p>
+  <p class="note" style="margin:8px 4px 0"><a href="https://github.com/orange-tv888/orange--tv/blob/main/update/version.json" data-t="notes"></a></p>
 </main>
 <script>
 const T = {
   zh: {
-    title: '升级 Aerial', lang: 'English',
-    sub: v => v ? `电视上现在是 Aerial ${v}。` : '',
+    title: '升级 Orange', lang: 'English',
+    sub: v => v ? `电视上现在是 Orange ${v}。` : '',
     tvHead: '在电视上', tvBody: '1.32 起，控制中心里出现「有新版本」时，点「下载并安装」，再在系统的安装界面里确认就行。电视不让 App 安装应用时，用下面的方法。',
     pcHead: '在电脑上', pcBody: '电脑和电视连同一个网络，在 macOS 或 Linux 的终端里运行（和第一次安装是同一条命令）：',
     pcNote: 'TCL 电视上会弹出多屏互动的提示，选「同意」。Windows 请交给上面的 Agent。',
     aiHead: '交给 Agent（最省事）', aiBody: '复制下面这段，发给能在电脑上运行命令的 Agent，比如：',
     agents: [['workbuddy', 'WorkBuddy'], ['doubao', '豆包电脑版'], ['qwen', '千问电脑版'], ['trae', 'Trae'], ['claude-code', 'Claude Code'], ['codex', 'Codex']],
     ai: tv =>
-`请帮我把电视上的开源桌面 Aerial 升级到最新版。
+`请帮我把电视上的开源桌面 Orange 升级到最新版。
 电视 IP：${tv}
 
-安装说明在这里：https://aerial.qust.me/agent.md
-（打不开时用 https://raw.githubusercontent.com/pengchujin/aerial-tv/main/site/agent.md ）
+安装说明在这里：https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/agent.md
+（打不开时用 https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/agent.md ）
 
 升级就是把安装再做一遍。请先完整读完安装说明再动手，然后在我的电脑上亲自运行命令，不要只把步骤告诉我。需要我在电视上操作时提醒我。
 最后按说明里的「验收」，把那几条命令的原始输出贴给我。`,
     keeps: 'App、排列顺序、壁纸和设置都会保留。', notes: '这次更新了什么 ›',
     copy: '复制', copied: '已复制',
-    // From the TV's setup page (#setup=1): Aerial is on the TV but nothing has made it Home yet.
+    // From the TV's setup page (#setup=1): Orange is on the TV but nothing has made it Home yet.
     setup: {
-      title: '让 Aerial 接管主屏幕',
-      sub: () => '只装了 APK 时，Aerial 能打开，但按主页键、开机和待机后还是原来的桌面。下面任选一种，把剩下的设置做完。',
-      tvHead: '在电视上', tvBody: '电视的设置里有「无障碍」时，打开其中的「Aerial 桌面守护」，主页键就会回到 Aerial。小米电视待机后会把它关掉，所以还是建议用电脑做一次。',
+      title: '让 Orange 接管主屏幕',
+      sub: () => '只装了 APK 时，Orange 能打开，但按主页键、开机和待机后还是原来的桌面。下面任选一种，把剩下的设置做完。',
+      tvHead: '在电视上', tvBody: '电视的设置里有「无障碍」时，打开其中的「Orange 桌面守护」，主页键就会回到 Orange。小米电视待机后会把它关掉，所以还是建议用电脑做一次。',
       ai: tv =>
-`请帮我把电视上已经装好的开源桌面 Aerial 设为开机进入的桌面。
+`请帮我把电视上已经装好的开源桌面 Orange 设为开机进入的桌面。
 电视 IP：${tv}
 保持 ADB 常开：要
 
-安装说明在这里：https://aerial.qust.me/agent.md
-（打不开时用 https://raw.githubusercontent.com/pengchujin/aerial-tv/main/site/agent.md ）
+安装说明在这里：https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/agent.md
+（打不开时用 https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/agent.md ）
 
 请先完整读完安装说明再动手，然后在我的电脑上亲自运行命令，不要只把步骤告诉我。需要我在电视上操作时提醒我。
 最后按说明里的「验收」，把那几条命令的原始输出贴给我。`,
-      keeps: '已经装好的 Aerial 会被同一版本覆盖，App、排列顺序、壁纸和设置都会保留。', notes: '',
+      keeps: '已经装好的 Orange 会被同一版本覆盖，App、排列顺序、壁纸和设置都会保留。', notes: '',
     },
   },
   en: {
-    title: 'Update Aerial', lang: '中文',
-    sub: v => v ? `This TV has Aerial ${v}.` : '',
+    title: 'Update Orange', lang: '中文',
+    sub: v => v ? `This TV has Orange ${v}.` : '',
     tvHead: 'On the TV', tvBody: 'From 1.32, when Control Center shows New Version, choose Download and Install, then confirm in the system installer. If the TV does not let apps install apps, use one of the ways below.',
     pcHead: 'On a computer', pcBody: 'On a computer on the same network as the TV, run this in a macOS or Linux terminal (the same command as the first install):',
     pcNote: 'TCL TVs show a 多屏互动 prompt: choose 同意 (Agree). On Windows, hand it to an agent above.',
     aiHead: 'Hand it to an agent (easiest)', aiBody: 'Copy this and give it to an agent that can run commands on your computer, such as:',
     agents: [['claude-code', 'Claude Code'], ['codex', 'Codex'], ['cursor', 'Cursor'], ['workbuddy', 'WorkBuddy'], ['trae', 'Trae']],
     ai: tv =>
-`Please update Aerial, the open-source home screen on my TV, to the latest version.
+`Please update Orange, the open-source home screen on my TV, to the latest version.
 TV IP: ${tv}
 
-The install guide is here: https://aerial.qust.me/en/agent.md
-(If it does not open: https://raw.githubusercontent.com/pengchujin/aerial-tv/main/site/en/agent.md )
+The install guide is here: https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/en/agent.md
+(If it does not open: https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/en/agent.md )
 
 Updating is installing again. Read the whole guide before you start, then run the commands on my computer yourself rather than telling me the steps. Tell me when I need to do something on the TV.
 Finally, follow the guide's Check step and paste me the raw output of those commands.`,
     keeps: 'Your apps, layout, wallpaper and settings stay as they are.', notes: 'What is new ›',
     copy: 'Copy', copied: 'Copied',
     setup: {
-      title: 'Make Aerial your Home screen',
-      sub: () => 'Installed from the APK alone, Aerial opens, but Home, power-on and wake still land on the old launcher. Either way below finishes the setup.',
-      tvHead: 'On the TV', tvBody: 'If the TV\'s settings have Accessibility, turn on Aerial Home Guard there and Home comes back to Aerial. Xiaomi TVs turn it off in standby, so a computer is still the better way.',
+      title: 'Make Orange your Home screen',
+      sub: () => 'Installed from the APK alone, Orange opens, but Home, power-on and wake still land on the old launcher. Either way below finishes the setup.',
+      tvHead: 'On the TV', tvBody: 'If the TV\'s settings have Accessibility, turn on Orange Home Guard there and Home comes back to Orange. Xiaomi TVs turn it off in standby, so a computer is still the better way.',
       ai: tv =>
-`Please make Aerial, the open-source home screen already installed on my TV, the screen the TV starts on.
+`Please make Orange, the open-source home screen already installed on my TV, the screen the TV starts on.
 TV IP: ${tv}
 Keep ADB on: yes
 
-The install guide is here: https://aerial.qust.me/en/agent.md
-(If it does not open: https://raw.githubusercontent.com/pengchujin/aerial-tv/main/site/en/agent.md )
+The install guide is here: https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/en/agent.md
+(If it does not open: https://raw.githubusercontent.com/orange-tv888/orange--tv/main/site/en/agent.md )
 
 Read the whole guide before you start, then run the commands on my computer yourself rather than telling me the steps. Tell me when I need to do something on the TV.
 Finally, follow the guide's Check step and paste me the raw output of those commands.`,
-      keeps: 'The Aerial already on the TV is installed over; your apps, layout, wallpaper and settings stay.', notes: '',
+      keeps: 'The Orange already on the TV is installed over; your apps, layout, wallpaper and settings stay.', notes: '',
     },
   },
 };
@@ -163,7 +163,7 @@ function render() {
   document.querySelectorAll('[data-t]').forEach(e => { e.textContent = t[e.dataset.t]; });
   $('#lang').textContent = t.lang;
   $('#sub').textContent = t.sub(version);
-  $('#cmd').textContent = `curl -fsSL https://aerial.qust.me/install.sh | KEEP_ADB=1 TV=${ip} bash${guard}`;
+  $('#cmd').textContent = `curl -fsSL https://raw.githubusercontent.com/orange-tv888/orange--tv/main/tools/install.sh | KEEP_ADB=1 TV=${ip} bash${guard}`;
   $('#ai').textContent = t.ai(ip);
   $('#agents').replaceChildren(...t.agents.map(([icon, name]) => {
     const li = document.createElement('li');

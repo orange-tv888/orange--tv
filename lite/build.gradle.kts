@@ -10,12 +10,12 @@ plugins {
 }
 
 android {
-    namespace = "app.orchard.tv.lite"
+    namespace = "app.orange.tv.lite"
     compileSdk = 36
 
     defaultConfig {
         // Its own package: the 4.x TVs never get the full app, and the two update separately.
-        applicationId = "app.orchard.tv.lite"
+        applicationId = "app.orange.tv.lite"
         // Android 4.0.
         minSdk = 14
         targetSdk = 34
@@ -81,23 +81,23 @@ val copyAerials by tasks.registering(Copy::class) {
 }
 val sharedSources = layout.buildDirectory.dir("generated/shared")
 val copySources by tasks.registering(Copy::class) {
-    from(rootProject.file("app/src/main/java/app/orchard/tv/ui/theme/GlyphPaths.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/apps/TileRecipes.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/weather/Cities.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/apps/LayoutStore.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/apps/AppNames.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/apps/CustomIcons.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/wallpaper/ScreensaverVideos.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/system/MitvPanel.kt"))
-    from(rootProject.file("app/src/main/java/app/orchard/tv/system/DeviceProfile.kt"))
-    into(sharedSources.map { it.dir("app/orchard/tv/lite") })
+    from(rootProject.file("app/src/main/java/app/orange/tv/ui/theme/GlyphPaths.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/apps/TileRecipes.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/weather/Cities.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/apps/LayoutStore.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/apps/AppNames.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/apps/CustomIcons.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/wallpaper/ScreensaverVideos.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/system/MitvPanel.kt"))
+    from(rootProject.file("app/src/main/java/app/orange/tv/system/DeviceProfile.kt"))
+    into(sharedSources.map { it.dir("app/orange/tv/lite") })
     // Into Lite's package; Compose's state and AndroidX's prefs.edit {} come from Lite's Shims.kt.
     filter { line ->
         when {
             line.startsWith("import androidx.compose.runtime.") || line == "import androidx.core.content.edit" -> ""
-            line.startsWith("import app.orchard.tv.") -> ""
-            else -> line.replace(Regex("^package app\\.orchard\\.tv(\\.[a-z.]+)?$"), "package app.orchard.tv.lite")
-                .replace("app.orchard.tv.ui.theme.Glyph", "app.orchard.tv.lite.Glyph")
+            line.startsWith("import app.orange.tv.") -> ""
+            else -> line.replace(Regex("^package app\\.orange\\.tv(\\.[a-z.]+)?$"), "package app.orange.tv.lite")
+                .replace("app.orange.tv.ui.theme.Glyph", "app.orange.tv.lite.Glyph")
         }
     }
 }

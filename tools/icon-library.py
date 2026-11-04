@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build site/icons for the website: the tile pictures Aerial can download per app.
+"""Build site/icons for the website: the tile pictures Orange can download per app.
 
     tools/icon-library.py <source dir> <out dir>
 

@@ -78,7 +78,7 @@ check_pin() {
 }
 
 # 单一真相：仓库地址只写在 UpdateSource.kt 里。
-REPO=$(grep -oE 'REPO = "[^"]+"' app/src/main/java/app/orchard/tv/update/UpdateSource.kt | cut -d'"' -f2)
+REPO=$(grep -oE 'REPO = "[^"]+"' app/src/main/java/app/orange/tv/update/UpdateSource.kt | cut -d'"' -f2)
 [ -n "$REPO" ] || die "在 UpdateSource.kt 里找不到 REPO"
 PUSH_URL="ssh://git@ssh.github.com:443/$REPO.git"
 git rev-parse --git-dir >/dev/null 2>&1 || die "这里还不是 git 仓库。先 git init 并接上 GitHub 远端。"

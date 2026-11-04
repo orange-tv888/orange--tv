@@ -45,7 +45,7 @@
 {
   "action": "android.intent.action.MAIN",
   "category": null,
-  "component": { "pkg": "app.orchard.tv", "cls": "app.orchard.tv.MainActivity" },
+  "component": { "pkg": "app.orange.tv", "cls": "app.orange.tv.MainActivity" },
   "extraList": [ { "type": 0, "key": "k", "value": "v" } ],
   "flagList": [268435456],
   "launchType": 1
@@ -65,7 +65,7 @@
 1. 🔴 **每次新建 TCP 连接，TCL 的侧边设置面板会自动关闭**（相当于「手机已连接」提示抢走焦点）。
    ⇒ 「打开设置 → 按键导航 → 截图确认」必须**在同一个连接里一口气跑完**，否则按键会全部落到桌面。
 2. 🔴 **下载地址不接受局域网 `http://<IP>:<非标端口>/...`**。MT5879 文档的做法是 `adb reverse` 后访问
-   `http://127.0.0.1:8765/Aerial.apk`——**本机没有 ADB 就做不了 reverse**，实测电视根本没发起请求
+   `http://127.0.0.1:8765/Orange.apk`——**本机没有 ADB 就做不了 reverse**，实测电视根本没发起请求
    （本机 macOS 防火墙为 disabled，已排除拦截）。⇒ 无 ADB 场景必须给**公网可访问 URL**。
 3. 多屏互动的安装提示框**默认焦点在「拒绝」上**，要先按「右」再按 OK（与现有文档一致）。
 

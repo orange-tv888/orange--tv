@@ -1,12 +1,12 @@
 #!/usr/bin/env bash
-# Collect what a maintainer needs to adapt Aerial to a TV they do not have, as text to paste into
+# Collect what a maintainer needs to adapt Orange to a TV they do not have, as text to paste into
 # a GitHub issue (the "机型适配 / Device support" form).
 #
 #   TV=<tv-ip> tools/report.sh
-#   curl -fsSL https://aerial.qust.me/tools/report.sh | TV=<tv-ip> bash
+#   curl -fsSL https://raw.githubusercontent.com/orange-tv888/orange--tv/main/tools/report.sh | TV=<tv-ip> bash
 #
-# Writes aerial-report-<model>.md in the current folder and prints it (on macOS also copies it).
-# Reads only: nothing on the TV is changed, except that Aerial is started if it was not running,
+# Writes orange-report-<model>.md in the current folder and prints it (on macOS also copies it).
+# Reads only: nothing on the TV is changed, except that Orange is started if it was not running,
 # for its own part of the report. Nothing personal is collected: no accounts, serial numbers,
 # Wi-Fi names, addresses or app lists; addresses in log lines are masked. Read the file before
 # posting it.
@@ -14,7 +14,7 @@ set -euo pipefail
 
 : "${TV:?set TV to the TV IP address, e.g. TV=<tv-ip> $0}"
 command -v adb >/dev/null || { echo "adb not found. macOS: brew install android-platform-tools; Linux: install android-tools / adb." >&2; exit 1; }
-PKG=app.orchard.tv
+PKG=app.orange.tv
 case "$TV" in *:*) SERIAL="$TV" ;; *) SERIAL="$TV:5555" ;; esac
 export ANDROID_SERIAL="$SERIAL"
 adb connect "$SERIAL" >/dev/null
@@ -39,7 +39,7 @@ mask() {
 }
 
 MODEL=$(sh_ getprop ro.product.model)
-OUT="aerial-report-$(printf '%s' "${MODEL:-tv}" | tr -c 'A-Za-z0-9._-' '_').md"
+OUT="orange-report-$(printf '%s' "${MODEL:-tv}" | tr -c 'A-Za-z0-9._-' '_').md"
 HOME_INTENT=(-a android.intent.action.MAIN -c android.intent.category.HOME)
 
 # From here a command the TV lacks or a grep that finds nothing is part of the report, not the end
@@ -61,7 +61,7 @@ set +e
   echo '```'
 
   echo
-  echo "**Aerial package**"
+  echo "**Orange package**"
   echo '```'
   sh_ dumpsys package "$PKG" | grep -E "versionName|versionCode|installerPackageName|lastUpdateTime|enabled=" | sed 's/^ *//' | sort -u
   echo "appops:"
@@ -77,7 +77,7 @@ set +e
     sh_ cmd package query-activities --brief "${HOME_INTENT[@]}" | sed 's/^/  /'
     sh_ cmd role get-role-holders android.app.role.HOME | sed 's/^/role holder: /'
   else
-    echo "resolves to: (no cmd on this Android; see Aerial's own Home section below)"
+    echo "resolves to: (no cmd on this Android; see Orange's own Home section below)"
   fi
   echo "foreground: $(sh_ dumpsys activity activities | grep -m1 -E "mResumedActivity|topResumedActivity|mFocusedActivity" | sed 's/^ *//')"
   echo '```'
@@ -107,36 +107,36 @@ set +e
   echo "<details><summary>TV inputs</summary>"
   echo
   echo '```'
-  # Which HDMI port each hardware id is; Aerial's part below lists the inputs themselves.
+  # Which HDMI port each hardware id is; Orange's part below lists the inputs themselves.
   sh_ dumpsys tv_input | grep -E "^ *TvInputHardwareInfo" | sed -E 's/^ *//' | sort -u | head -30 | mask
   echo '```'
   echo
   echo "</details>"
 
   echo
-  echo "<details><summary>logcat (Aerial)</summary>"
+  echo "<details><summary>logcat (Orange)</summary>"
   echo
   echo '```'
-  # Aerial's own tags, and the system services' lines about Aerial (kills, bindings, installs).
+  # Orange's own tags, and the system services' lines about Orange (kills, bindings, installs).
   # Only these tags: other apps log all sorts about a package (Xiaomi's store logs the app list).
   sh_ logcat -d -v time -t 8000 \
-    | grep -E " [VDIWEF]/(Aerial(Guard|Diag|Updates|Stream|Wallpaper|KonkaSources)|AndroidRuntime)\(| [VDIWEF]/(ActivityManager|ActivityTaskManager|NotificationListeners|AccessibilityManagerService|PackageManager|PackageInstaller)\(.*$PKG" \
+    | grep -E " [VDIWEF]/(Orange(Guard|Diag|Updates|Stream|Wallpaper|KonkaSources)|AndroidRuntime)\(| [VDIWEF]/(ActivityManager|ActivityTaskManager|NotificationListeners|AccessibilityManagerService|PackageManager|PackageInstaller)\(.*$PKG" \
     | cut -c1-400 | tail -n 250 | mask
   echo '```'
   echo
   echo "</details>"
   echo
 
-  # Aerial's own part (Diagnostics.kt): what it sees from inside the app.
+  # Orange's own part (Diagnostics.kt): what it sees from inside the app.
   if ! sh_ pidof "$PKG" >/dev/null; then
     sh_ am start -n "$PKG/.MainActivity" >/dev/null
     sleep 4
   fi
-  APP=$(sh_ dumpsys activity "$PKG/.MainActivity" report | sed -n '/^### Aerial diagnostics/,$p')
-  if [ -n "$APP" ]; then echo "$APP"; else echo "(Aerial's own report is missing: Aerial is older than 1.32 or is not running.)"; fi
+  APP=$(sh_ dumpsys activity "$PKG/.MainActivity" report | sed -n '/^### Orange diagnostics/,$p')
+  if [ -n "$APP" ]; then echo "$APP"; else echo "(Orange's own report is missing: Orange is older than 1.32 or is not running.)"; fi
 } > "$OUT"
 
 cat "$OUT"
 echo
 command -v pbcopy >/dev/null && pbcopy < "$OUT" && echo "Copied to the clipboard." >&2
-echo "Saved to $OUT. Read it, then paste it into https://github.com/pengchujin/aerial-tv/issues/new?template=device.yml" >&2
+echo "Saved to $OUT. Read it, then paste it into https://github.com/orange-tv888/orange--tv/issues/new?template=device.yml" >&2

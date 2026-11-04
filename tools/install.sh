@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Install Aerial on a TV over ADB and make it the home screen.
+# Install Orange on a TV over ADB and make it the home screen.
 #
 #   TV=<tv-ip> tools/install.sh               # standard build (declares HOME)
 #   TV=<tv-ip> tools/install.sh guard         # for firmwares that refuse to install a launcher
 #   KEEP_ADB=1 TV=<tv-ip> tools/install.sh    # also switch ADB back on whenever the TV turns it off
 #   TV=<tv-ip> tools/install.sh repair        # Home went back to the TV's launcher: restart Home Guard
-#   TV=<tv-ip> tools/install.sh lite          # Aerial Lite; chosen by itself on Android 4.0-4.4,
+#   TV=<tv-ip> tools/install.sh lite          # Orange Lite; chosen by itself on Android 4.0-4.4,
 #                                             # refused on 5.0+ (FORCE_LITE=1 to try it there)
 #
-# The APK comes from the latest release (aerial.qust.me's copy, else GitHub), so only adb is needed
-# (and python3 on TCL TVs).
+# The APK comes from this repository (update/orange.apk on main, else jsDelivr's copy), so only adb
+# is needed (and python3 on TCL TVs).
 #   BUILD=1        build it from this checkout instead (JDK 17 + Android SDK)
 #   APK_FILE=<apk> install this file instead
 #   STAY_CONNECTED=1  stay connected to the TV afterwards (otherwise adb lets go of it at the end)
@@ -17,11 +17,11 @@
 # Takeover, gentlest first. Nothing is uninstalled or disabled:
 #   1. Ask Android: HOME role / preferred home activity. Works on stock Android TV and Google TV.
 #   2. If the firmware pins Home to its own launcher anyway (Xiaomi PatchWall, TCL, most China-market
-#      firmware), Aerial Home Guard takes over: an accessibility service that answers the Home key
+#      firmware), Orange Home Guard takes over: an accessibility service that answers the Home key
 #      and steps in front of the stock launcher. Firmwares that force-stop third-party apps on standby
-#      (Xiaomi) switch accessibility services off; a notification-listener binding brings Aerial back
+#      (Xiaomi) switch accessibility services off; a notification-listener binding brings Orange back
 #      (or, where Android refuses listeners, a sync adapter about 30 s later: guard/RevivalSync.kt)
-#      and Aerial switches the guard on again, which is what WRITE_SECURE_SETTINGS is granted for.
+#      and Orange switches the guard on again, which is what WRITE_SECURE_SETTINGS is granted for.
 #
 # Firmwares that block every ADB install (TCL's package verifier) get it through TCL's own 多屏互动,
 # with one confirmation on the TV; failing that, the APK is pushed to Download and installed through
@@ -32,11 +32,11 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 : "${TV:?set TV to the TV IP address, e.g. TV=<tv-ip> $0}"
-REPO=pengchujin/aerial-tv
+REPO=orange-tv888/orange--tv
 command -v adb >/dev/null || { echo "adb not found. macOS: brew install android-platform-tools; Linux: install android-tools / adb." >&2; exit 1; }
 FLAVOR="${1:-standard}"
 case "$FLAVOR" in standard|guard|repair|lite) ;; *) echo "flavor must be standard, guard or lite (or repair)" >&2; exit 1 ;; esac
-PKG=app.orchard.tv
+PKG=app.orange.tv
 GUARD="$PKG/$PKG.guard.HomeGuardService"
 
 export ANDROID_HOME="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
@@ -112,33 +112,33 @@ fi
 # MiTV-MFTP0 (Android 9) kept the entry while system_server still pointed at the old APK directory
 # and never bound it (issue #72).
 # Some firmwares show the class name where the label goes (Xiaomi MiTV-ASTP0, Android 9, issue #183).
-guard_bound() { adb shell dumpsys accessibility 2>/dev/null | grep -q -E "label=(Aerial|app\.orchard\.tv)"; }
+guard_bound() { adb shell dumpsys accessibility 2>/dev/null | grep -q -E "label=(Orange|app\.orange\.tv)"; }
 
 wait_guard() {
   for _ in $(seq 1 "$1"); do sleep 1; guard_bound && return 0; done
   return 1
 }
 
-# Stopping Aerial makes system_server load it afresh, from the APK that is really installed; the
+# Stopping Orange makes system_server load it afresh, from the APK that is really installed; the
 # guard is bound again when it starts (verified on MiTV-MFTP0, issue #72).
-restart_aerial() {
+restart_orange() {
   adb shell am force-stop "$PKG"
   sleep 3
   adb shell am start -W -n "$PKG/.MainActivity" >/dev/null 2>&1 || true
 }
 
-# Grants that only ADB can give; Aerial never asks for them on screen. Again on repair: an APK
+# Grants that only ADB can give; Orange never asks for them on screen. Again on repair: an APK
 # installed without this script has none of them, and Home Guard never came on (issue #853).
 grant() {
   adb shell pm grant "$PKG" android.permission.WRITE_SECURE_SETTINGS 2>/dev/null || true  # keep Home Guard (and ADB) on
-  adb shell appops set "$PKG" SYSTEM_ALERT_WINDOW allow 2>/dev/null || true             # open Aerial after boot
+  adb shell appops set "$PKG" SYSTEM_ALERT_WINDOW allow 2>/dev/null || true             # open Orange after boot
   adb shell appops set "$PKG" WRITE_SETTINGS allow 2>/dev/null || true                  # brightness
   adb shell appops set "$PKG" REQUEST_INSTALL_PACKAGES allow 2>/dev/null || true        # update from Control Center
   # What is in front, where a launcher hides from accessibility (Xiaomi Android 6, issue #81).
   # Android 5 knows the op only by this name.
   adb shell appops set "$PKG" GET_USAGE_STATS allow 2>/dev/null || true
   adb shell appops set "$PKG" android:get_usage_stats allow 2>/dev/null || true
-  # Android 13 and later restrict an app installed from a file (a USB stick, a file manager, Aerial's
+  # Android 13 and later restrict an app installed from a file (a USB stick, a file manager, Orange's
   # own update before 1.63): its accessibility service may not be switched on. Both TVs where Home
   # Guard kept going off had it denied (OBE R3 Ultra Max and TCL 75T7M Pro, Android 14, issues #811
   # #829). Older Android does not know the op, which is fine.
@@ -154,57 +154,55 @@ grant() {
   adb shell cmd notification allow_listener "$PKG/$PKG.guard.RevivalListener" 2>/dev/null || true  # come back after a kill
 }
 
-# Android 4.0-4.4 cannot run the full app (Jetpack Compose needs Android 5.0). Aerial Lite is a
+# Android 4.0-4.4 cannot run the full app (Jetpack Compose needs Android 5.0). Orange Lite is a
 # separate package that declares HOME and has no Home Guard, so the owner picks it once in
 # Android's home chooser (docs/LITE.md). Nothing else from the steps below applies.
 # Each build is refused on the other side of 5.0: Android rejects the full app below 5.0 by itself,
 # but nothing stops Lite (minSdk 14) on a newer TV, where it would add a second HOME candidate next
-# to Aerial and the stock launcher. FORCE_LITE=1 is for trying Lite on a new TV (docs/LITE.md).
+# to Orange and the stock launcher. FORCE_LITE=1 is for trying Lite on a new TV (docs/LITE.md).
 SDK=$(adb shell getprop ro.build.version.sdk 2>/dev/null | tr -d '\r')
 OLD_ANDROID=0
 [ -n "$SDK" ] && [ "$SDK" -lt 21 ] 2>/dev/null && OLD_ANDROID=1
 if [ "$FLAVOR" = lite ] && [ "$OLD_ANDROID" = 0 ] && [ "${FORCE_LITE:-0}" != 1 ]; then
-  echo "This TV runs Android $(adb shell getprop ro.build.version.release | tr -d '\r'): Aerial Lite is only for Android 4.0-4.4. Run the command without \"lite\" to install Aerial." >&2
+  echo "This TV runs Android $(adb shell getprop ro.build.version.release | tr -d '\r'): Orange Lite is only for Android 4.0-4.4. Run the command without \"lite\" to install Orange." >&2
   exit 1
 fi
 if [ "$OLD_ANDROID" = 1 ] && [ -n "${1:-}" ] && [ "$FLAVOR" != lite ]; then
-  echo "This TV runs Android $(adb shell getprop ro.build.version.release | tr -d '\r'), and Aerial needs 5.0 or newer. Run the command without \"$FLAVOR\" to install Aerial Lite, the version for Android 4.0-4.4." >&2
+  echo "This TV runs Android $(adb shell getprop ro.build.version.release | tr -d '\r'), and Orange needs 5.0 or newer. Run the command without \"$FLAVOR\" to install Orange Lite, the version for Android 4.0-4.4." >&2
   exit 1
 fi
 if [ "$FLAVOR" = lite ] || [ "$OLD_ANDROID" = 1 ]; then
-  LITE=app.orchard.tv.lite
-  [ "$FLAVOR" = lite ] || echo "This TV runs Android $(adb shell getprop ro.build.version.release | tr -d '\r'): installing Aerial Lite, the version for Android 4.0-4.4 (first release, a beta)."
+  LITE=app.orange.tv.lite
+  [ "$FLAVOR" = lite ] || echo "This TV runs Android $(adb shell getprop ro.build.version.release | tr -d '\r'): installing Orange Lite, the version for Android 4.0-4.4 (first release, a beta)."
   if [ -n "${APK_FILE:-}" ]; then APK=$APK_FILE
-  elif [ "${BUILD:-0}" = 1 ]; then ./gradlew -q --console=plain :lite:assembleRelease; APK=lite/build/outputs/apk/release/lite-release.apk
   else
-    APK="${TMPDIR:-/tmp}/aerial-lite.apk"
-    for url in "https://aerial.qust.me/download/aerial-lite.apk" "https://github.com/$REPO/releases/latest/download/aerial-lite.apk" ""; do
-      [ -n "$url" ] || { echo "Could not download aerial-lite.apk" >&2; exit 1; }
-      echo "Downloading $url" >&2
-      curl -fL --progress-bar --connect-timeout 10 -o "$APK" "$url" && break
-    done
+    # Lite is not published (docs/release/CHECKLIST.md B6): there is no download to fall back on,
+    # so build it from this checkout.
+    echo "Orange Lite is not published; building it from this checkout." >&2
+    ./gradlew -q --console=plain :lite:assembleRelease
+    APK=lite/build/outputs/apk/release/lite-release.apk
   fi
   echo "Installing $APK"
   OUT=$(adb install -r "$APK" 2>&1 | tr -d '\r') || true
   echo "$OUT" | tail -n 2
-  echo "$OUT" | grep -q Success || { echo "Installing failed. Copy the APK to a USB drive and open it with the TV's file manager, or see https://aerial.qust.me/agent.md" >&2; exit 1; }
+  echo "$OUT" | grep -q Success || { echo "Installing failed. Copy the APK to a USB drive and open it with the TV's file manager, or see https://raw.githubusercontent.com/$REPO/main/site/agent.md" >&2; exit 1; }
   # Brightness on TVs that keep it in a secure or global setting (Xiaomi picture_backlight).
   # Android 4.0 cannot grant it from the shell; the slider then opens the TV's picture settings.
   adb shell pm grant "$LITE" android.permission.WRITE_SECURE_SETTINGS >/dev/null 2>&1 || true
   adb shell am start -n "$LITE/.HomeActivity" >/dev/null 2>&1 || true
   echo
-  echo "Aerial Lite is installed and open. Press Home on the remote; when Android asks which app to use,"
-  echo "choose Aerial Lite, then Always. If no question comes and the old launcher opens, the firmware"
-  echo "keeps Home for its own launcher: open Aerial Lite from the app list instead."
+  echo "Orange Lite is installed and open. Press Home on the remote; when Android asks which app to use,"
+  echo "choose Orange Lite, then Always. If no question comes and the old launcher opens, the firmware"
+  echo "keeps Home for its own launcher: open Orange Lite from the app list instead."
   exit 0
 fi
 
 if [ "$FLAVOR" = repair ]; then
-  adb shell pm path "$PKG" >/dev/null 2>&1 || { echo "Aerial is not installed on this TV." >&2; exit 1; }
+  adb shell pm path "$PKG" >/dev/null 2>&1 || { echo "Orange is not installed on this TV." >&2; exit 1; }
   grant
-  restart_aerial
+  restart_orange
   if wait_guard 8; then echo "Home Guard is running again. Press Home on the remote."; exit 0; fi
-  echo "Aerial is open, but Home Guard is not running. Run the install command again." >&2
+  echo "Orange is open, but Home Guard is not running. Run the install command again." >&2
   exit 1
 fi
 
@@ -218,13 +216,19 @@ build() {
     ./gradlew -q --console=plain "$task"
     echo "app/build/outputs/apk/$flavor/release/app-$flavor-release.apk"
   else
-    local out="${TMPDIR:-/tmp}/aerial-$flavor.apk" url
-    for url in "https://aerial.qust.me/download/aerial-$flavor.apk" \
-               "https://github.com/$REPO/releases/latest/download/aerial-$flavor.apk"; do
+    local out="${TMPDIR:-/tmp}/orange-$flavor.apk" url
+    # Orange publishes one APK, update/orange.apk (the standard build). There is no Release page
+    # and no guard build to download, so those two say so instead of pulling a stranger's launcher.
+    if [ "$flavor" != standard ]; then
+      echo "No published $flavor build. Run again with BUILD=1 to build it from this checkout, or APK_FILE=<apk>." >&2
+      return 1
+    fi
+    for url in "https://raw.githubusercontent.com/$REPO/main/update/orange.apk" \
+               "https://cdn.jsdelivr.net/gh/$REPO@main/update/orange.apk"; do
       echo "Downloading $url" >&2
       if curl -fL --progress-bar --connect-timeout 10 -o "$out" "$url"; then echo "$out"; return; fi
     done
-    echo "Could not download aerial-$flavor.apk" >&2
+    echo "Could not download orange.apk" >&2
     return 1
   fi
 }
@@ -255,12 +259,12 @@ tcast_install() {
   local apk=$1 want=$2 dir srv rc=0
   nc -z -G 3 "${SERIAL%%:*}" 6553 >/dev/null 2>&1 || return 1
   dir=$(mktemp -d)
-  cp "$apk" "$dir/Aerial.apk"
+  cp "$apk" "$dir/Orange.apk"
   python3 -m http.server 8765 --bind 127.0.0.1 --directory "$dir" >/dev/null 2>&1 &
   srv=$!
   adb reverse tcp:8765 tcp:8765 >/dev/null
-  echo "Pushing Aerial through 多屏互动. On the TV, choose 同意 (Agree)."
-  python3 tools/tcast-push.py "${SERIAL%%:*}" http://127.0.0.1:8765/Aerial.apk "$PKG" Aerial "${want:-0}" 180 || rc=$?
+  echo "Pushing Orange through 多屏互动. On the TV, choose 同意 (Agree)."
+  python3 tools/tcast-push.py "${SERIAL%%:*}" http://127.0.0.1:8765/Orange.apk "$PKG" Orange "${want:-0}" 180 || rc=$?
   adb reverse --remove tcp:8765 >/dev/null 2>&1 || true
   { kill "$srv" && wait "$srv"; } 2>/dev/null || true
   rm -rf "$dir"
@@ -287,16 +291,16 @@ if [ "$RC" -ne 0 ] || ! printf '%s\n' "$OUT" | grep -q Success; then
         TCAST_OK=1
       else
         # No 多屏互动: put the APK in Download and install it on the TV itself.
-        adb shell rm -f /sdcard/Download/Aerial.apk
-        adb push "$APK" /sdcard/Download/Aerial.apk >/dev/null
+        adb shell rm -f /sdcard/Download/Orange.apk
+        adb push "$APK" /sdcard/Download/Orange.apk >/dev/null
         adb shell content call --uri content://media --method scan_volume --arg external_primary >/dev/null 2>&1 || true
-        echo "This TV only installs apps from the TV itself. Aerial.apk is now in Download on the TV."
+        echo "This TV only installs apps from the TV itself. Orange.apk is now in Download on the TV."
         if adb shell pm path com.dangbeimarket >/dev/null 2>&1; then
           adb shell am start -n com.dangbeimarket/.ui.apkmanager.ApkManagerActivity >/dev/null 2>&1 || true
-          echo "Dangbei's package manager is open on the TV: choose Aerial, then Install (confirm on the TV)."
+          echo "Dangbei's package manager is open on the TV: choose Orange, then Install (confirm on the TV)."
         else
           echo "Open it with a file manager or an app store's local install already on the TV, and confirm."
-          echo "Do not install another app (an app store or a tool) to do this: Aerial is the only app this installs."
+          echo "Do not install another app (an app store or a tool) to do this: Orange is the only app this installs."
         fi
         echo -n "Waiting for the install"
         for _ in $(seq 1 120); do
@@ -305,11 +309,11 @@ if [ "$RC" -ne 0 ] || ! printf '%s\n' "$OUT" | grep -q Success; then
         done
         echo
       fi
-      [ "$TCAST_OK" = 1 ] || installed_now || { echo "Aerial was not installed; nothing else was changed." >&2; exit 1; }
+      [ "$TCAST_OK" = 1 ] || installed_now || { echo "Orange was not installed; nothing else was changed." >&2; exit 1; }
       FLAVOR=guard
       ;;
     *INCONSISTENT_CERTIFICATES*|*UPDATE_INCOMPATIBLE*)
-      echo "The Aerial on this TV is signed with another key (a build of someone else's), so it cannot be updated in place." >&2
+      echo "The Orange on this TV is signed with another key (a build of someone else's), so it cannot be updated in place." >&2
       echo "Uninstall it first (this drops its settings, wallpapers and photos): adb uninstall $PKG" >&2
       exit 1
       ;;
@@ -322,34 +326,37 @@ fi
 
 grant
 # Android 9 on Xiaomi MiTV-MFTP0 reports success but never binds it (issue #72): low-RAM devices
-# get no notification listeners at all. Aerial's sync adapter brings it back there instead, later.
+# get no notification listeners at all. Orange's sync adapter brings it back there instead, later.
 if ! adb shell dumpsys notification 2>/dev/null | grep -q "$PKG/$PKG.guard.RevivalListener"; then
-  echo "Note: this TV refuses notification listeners. After the TV stops Aerial (Xiaomi does at standby)," >&2
-  echo "Aerial comes back through Android's sync service about 30-60 seconds later, not at once: after a" >&2
+  echo "Note: this TV refuses notification listeners. After the TV stops Orange (Xiaomi does at standby)," >&2
+  echo "Orange comes back through Android's sync service about 30-60 seconds later, not at once: after a" >&2
   echo "short standby the TV's launcher can show for up to a minute. Keep auto-sync on. If Home ever stays" >&2
   echo "on the TV's launcher: TV=$TV $0 repair" >&2
 fi
-# TVs on Android's standard screensaver (TCL's carries a membership upsell) get Aerial's instead,
-# so it also starts while another app sits idle. Xiaomi uses its own; Aerial covers it from Home.
+# TVs on Android's standard screensaver (TCL's carries a membership upsell) get Orange's instead,
+# so it also starts while another app sits idle. Xiaomi uses its own; Orange covers it from Home.
 if [ "$(adb shell settings get secure screensaver_enabled | tr -d '\r')" = 1 ]; then
+  # The dream service is still called AerialDream: it is a class name, and a TV that already has it as
+  # its screensaver stored that exact component in secure settings, so renaming it would blank the
+  # screensaver on every installed TV until it was set again.
   adb shell settings put secure screensaver_components "$PKG/$PKG.dream.AerialDream"
-  # Some firmwares (TCL) put their own back on every boot; Aerial restores it when it starts.
+  # Some firmwares (TCL) put their own back on every boot; Orange restores it when it starts.
   adb shell am broadcast -a "$PKG.CONFIG" -n "$PKG/.guard.ConfigReceiver" --ez own_screensaver true >/dev/null
-  echo "Aerial's screensaver is now the TV's screensaver."
+  echo "Orange's screensaver is now the TV's screensaver."
 fi
 if [ "${KEEP_ADB:-0}" = 1 ]; then
   adb shell am broadcast -a "$PKG.CONFIG" -n "$PKG/.guard.ConfigReceiver" --ez keep_adb true >/dev/null
-  echo "Aerial will switch ADB debugging back on whenever the TV turns it off."
+  echo "Orange will switch ADB debugging back on whenever the TV turns it off."
 fi
 
 if ! adb shell am start -W -n "$PKG/.MainActivity" | grep -q "Status: ok"; then
-  echo "Aerial did not start; Home was left untouched." >&2
+  echo "Orange did not start; Home was left untouched." >&2
   exit 1
 fi
 
 # Compose runs much smoother ahead-of-time compiled on TV chips: Home's tiles show in about half the
-# time. After Aerial's first start, not before: some firmwares compile "speed" as "speed-profile"
-# (Xiaomi MiTV-MFTR0, Android 14), which needs the profile Aerial writes as it starts; compiled
+# time. After Orange's first start, not before: some firmwares compile "speed" as "speed-profile"
+# (Xiaomi MiTV-MFTR0, Android 14), which needs the profile Orange writes as it starts; compiled
 # straight after the install it was left interpreted ("verify").
 sleep 5
 adb shell cmd package compile -m speed -f "$PKG" >/dev/null 2>&1 || true
@@ -367,9 +374,11 @@ if [ "$FLAVOR" = standard ]; then
   # value is kept on the TV for restore.sh.
   VT_HOME=$(adb shell getprop persist.vt.use_home_pkg | tr -d '\r')
   if [ -n "$VT_HOME" ] && [ "$VT_HOME" != "$PKG" ]; then
+    # Key left as aerial_vt_home_pkg on purpose: restore.sh looks it up by that name, and on TVs that
+    # already took over Home the value is sitting in the TV's own settings under it.
     adb shell settings put global aerial_vt_home_pkg "$VT_HOME"
     adb shell setprop persist.vt.use_home_pkg "$PKG"
-    echo "Hisense: Home now opens Aerial instead of $VT_HOME."
+    echo "Hisense: Home now opens Orange instead of $VT_HOME."
   fi
   # Not on Xiaomi (PatchWall, com.mitv.tvhome installed): most firmwares ignore it, but one Android 9
   # set took it, PatchWall then ran as an ordinary app outside the home stack, and Xiaomi's short
@@ -382,13 +391,13 @@ if [ "$FLAVOR" = standard ]; then
   HOME_NOW=$(resolve_home)
   case "$HOME_NOW" in
     "$PKG"/*)
-      echo "Aerial is the home screen ($HOME_NOW)."
+      echo "Orange is the home screen ($HOME_NOW)."
       exit 0 ;;
   esac
-  echo "The firmware still sends Home to $HOME_NOW; turning on Aerial Home Guard."
+  echo "The firmware still sends Home to $HOME_NOW; turning on Orange Home Guard."
 fi
 
-# Aerial switches the guard on itself when it starts (it has WRITE_SECURE_SETTINGS by now). Do it
+# Orange switches the guard on itself when it starts (it has WRITE_SECURE_SETTINGS by now). Do it
 # here as well, appending to the list so no other service is dropped.
 CURRENT=$(adb shell settings get secure enabled_accessibility_services | tr -d '\r')
 case "$CURRENT" in
@@ -402,13 +411,13 @@ if wait_guard 6; then
   echo "Home Guard is running. Press Home on the remote."
   exit 0
 fi
-echo "Home Guard is enabled but Android has not started it; restarting Aerial."
-restart_aerial
+echo "Home Guard is enabled but Android has not started it; restarting Orange."
+restart_orange
 if wait_guard 8; then
   echo "Home Guard is running. Press Home on the remote."
   exit 0
 fi
 echo "Home Guard is enabled but Android has not started it." >&2
-echo "Some TCL / Hisense firmwares block sideloaded accessibility services: allow Aerial under the" >&2
+echo "Some TCL / Hisense firmwares block sideloaded accessibility services: allow Orange under the" >&2
 echo "TV's security app (自启动 / 无障碍 / 权限管理), then run this script again." >&2
 exit 1

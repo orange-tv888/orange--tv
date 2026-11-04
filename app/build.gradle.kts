@@ -11,14 +11,17 @@ plugins {
 }
 
 android {
-    namespace = "app.orchard.tv"
+    namespace = "app.orange.tv"
     compileSdk = 36
 
     defaultConfig {
-        // Fork identity (Orange). The namespace above stays app.orchard.tv, so class names and R
-        // do not move; only the installed identity changes. Two consequences: adb component names
-        // read "app.orange.tv/app.orchard.tv.MainActivity", and Updates.canInstall turns false on
-        // its own, which is what keeps this copy from installing the official release over itself.
+        // Orange. namespace and applicationId are the same string since 26.5.0 (26.5.0-rebrand):
+        // the old namespace app.orchard.tv is gone, so adb component names read
+        // "app.orange.tv/app.orange.tv.MainActivity". namespace only decides the package of the
+        // generated R / BuildConfig and the source tree, never the installed identity, so signing,
+        // over-the-air updates and the update channel's own package check are untouched. One real
+        // consequence: the component name changed, so a device that already installed an older
+        // build loses its default-home binding and needs tools/install.sh to set it again.
         applicationId = "app.orange.tv"
         // Android 5.0. Compose 1.10 and later need 6.0, so the Compose BOM below stays on 1.9.
         minSdk = 21
@@ -27,8 +30,8 @@ android {
         // (26.4.2 is the second patch of 26.4); ten patches roll Y up one. Code = YEAR*100 + Y*10 + P,
         // so 26.4.2 is 2642. The official 1.75 / 96 line is archived in dist/official-1.75 and no
         // longer compared against.
-        versionCode = 2642
-        versionName = "26.4.2"
+        versionCode = 2650
+        versionName = "26.5.0"
         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
         // see system/DiagLog.kt.
         val diag = project.hasProperty("diag")
@@ -181,3 +184,17 @@ androidComponents {
         variant.sources.assets?.addGeneratedSourceDirectory(task, DexMetadataAssets::outputDir)
     }
 }
+
+// MIT asks that the copyright notice and the licence text travel with every copy of the software.
+// They go into the APK as assets/licences, copied from the repository's own files so there is one
+// copy to keep; Control Center → About → Licences reads them back (ControlCenter.AboutPage).
+val licenceAssetsDir = layout.buildDirectory.dir("generated/licenceAssets")
+val copyLicenceAssets by tasks.registering(Copy::class) {
+    from(rootProject.file("LICENSE")) { rename { "LICENSE.txt" } }
+    from(rootProject.file("THIRD-PARTY.md"))
+    from(rootProject.file("FONT-LICENSE-OFL.txt"))
+    into(licenceAssetsDir.map { it.dir("licences") })
+}
+android.sourceSets.getByName("main").assets.srcDir(licenceAssetsDir)
+tasks.named("preBuild") { dependsOn(copyLicenceAssets) }
+

@@ -18,6 +18,11 @@
     <string name="cc_home_guarded">Home Guard is on</string>
     <string name="cc_home_not_default">Not the default home screen</string>
     <string name="cc_setup_title">Make Orange Your Home Screen</string>
+    <string name="cc_about">About</string>
+    <string name="cc_about_title">About · Licences</string>
+    <string name="cc_about_origin">Orange is a modified version of Aerial, which is under the MIT licence. Its copyright notice and licence text are kept here in full.</string>
+    <string name="cc_about_components">Third-party components</string>
+    <string name="cc_about_licence">Licence text</string>
     <string name="cc_setup_body">Installed from the APK alone, Orange opens, but Home, power-on and wake still go to the old launcher.</string>
     <string name="cc_setup_guard">Turn On Home Guard</string>
     <string name="cc_setup_guard_where">Accessibility</string>

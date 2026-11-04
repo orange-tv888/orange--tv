@@ -1,22 +1,22 @@
 name: 问题反馈 / Bug report
-description: Aerial 某个功能不对、显示错了、闪退 / Something in Aerial is wrong, looks wrong or crashes
+description: Orange 某个功能不对、显示错了、闪退 / Something in Orange is wrong, looks wrong or crashes
 title: "[问题] "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        装不上、按主页键回不到 Aerial、开机或待机后回到原桌面、信号源不对：请用「机型适配」模板，那些要看诊断信息。
-        Can't install, Home doesn't come back to Aerial, the old launcher returns after boot or standby, inputs are wrong: use the Device support form instead.
+        装不上、按主页键回不到 Orange、开机或待机后回到原桌面、信号源不对：请用「机型适配」模板，那些要看诊断信息。
+        Can't install, Home doesn't come back to Orange, the old launcher returns after boot or standby, inputs are wrong: use the Device support form instead.
 
-        提交前先在 [Issues](https://github.com/pengchujin/aerial-tv/issues?q=is%3Aissue) 搜一下，同样的问题在已有的帖子下面补充就好。
+        提交前先在 [Issues](https://github.com/orange-tv888/orange--tv/issues?q=is%3Aissue) 搜一下，同样的问题在已有的帖子下面补充就好。
         Search the existing issues first; if yours is there, add to it.
   - type: input
     id: version
     attributes:
-      label: Aerial 版本 / Aerial version
+      label: Orange 版本 / Orange version
       description: 控制中心最下面右边写的版本 / Shown at the bottom right of Control Center
-      placeholder: Aerial 1.31
+      placeholder: Orange 26.5.0
     validations:
       required: true
   - type: input
@@ -67,7 +67,7 @@ body:
     id: diagnostics
     attributes:
       label: 诊断信息（可选）/ Diagnostics (optional)
-      description: 手机配置页最下面「反馈问题 → 显示诊断信息 → 复制」，或电脑上运行 `curl -fsSL https://aerial.qust.me/tools/report.sh | TV=<电视IP> bash` / From the phone page's 反馈问题, or report.sh
+      description: 手机配置页最下面「反馈问题 → 显示诊断信息 → 复制」，或电脑上运行 `curl -fsSL https://raw.githubusercontent.com/orange-tv888/orange--tv/main/tools/report.sh | TV=<电视IP> bash` / From the phone page's 反馈问题, or report.sh
       render: markdown
   - type: checkboxes
     id: checks

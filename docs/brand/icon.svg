@@ -3,8 +3,8 @@
        Same mark as the website logo (site/favicon.svg), scaled 2.25x into the visible 72. -->
   <defs>
     <linearGradient id="bg" x1="18" y1="18" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#2FD0A5"/>
-      <stop offset="1" stop-color="#5B5BF0"/>
+      <stop offset="0" stop-color="#FFA733"/>
+      <stop offset="1" stop-color="#FF5E1A"/>
     </linearGradient>
   </defs>
   <rect width="108" height="108" fill="url(#bg)"/>

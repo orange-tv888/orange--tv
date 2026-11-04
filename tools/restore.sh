@@ -1,18 +1,18 @@
 #!/usr/bin/env bash
 # Give Home back to the TV's own launcher.
 #
-#   TV=<tv-ip> tools/restore.sh              # stop taking over Home, keep Aerial installed
-#   TV=<tv-ip> tools/restore.sh --uninstall  # and remove Aerial (and Aerial Lite)
+#   TV=<tv-ip> tools/restore.sh              # stop taking over Home, keep Orange installed
+#   TV=<tv-ip> tools/restore.sh --uninstall  # and remove Orange (and Orange Lite)
 # If you disabled the stock launcher by hand, also: adb shell pm enable <its package>
 set -euo pipefail
 : "${TV:?set TV to the TV IP address}"
-PKG=app.orchard.tv
+PKG=app.orange.tv
 GUARD="$PKG/$PKG.guard.HomeGuardService"
 case "$TV" in *:*) SERIAL="$TV" ;; *) SERIAL="$TV:5555" ;; esac
 export ANDROID_SERIAL="$SERIAL"
 adb connect "$SERIAL" >/dev/null
 
-# First take away what lets Aerial switch the guard back on, or it would simply do so.
+# First take away what lets Orange switch the guard back on, or it would simply do so.
 adb shell am broadcast -a "$PKG.CONFIG" -n "$PKG/.guard.ConfigReceiver" --ez keep_adb false --ez own_screensaver false >/dev/null 2>&1 || true
 adb shell cmd notification disallow_listener "$PKG/$PKG.guard.RevivalListener" >/dev/null 2>&1 || true
 adb shell pm revoke "$PKG" android.permission.WRITE_SECURE_SETTINGS >/dev/null 2>&1 || true
@@ -49,7 +49,7 @@ elif [ "$(adb shell getprop persist.vt.use_home_pkg | tr -d '\r')" = "$PKG" ] &&
   adb shell setprop persist.vt.use_home_pkg com.jamdeo.tv.vod
 fi
 adb shell cmd role remove-role-holder --user 0 android.app.role.HOME "$PKG" >/dev/null 2>&1 || true
-# Xiaomi where an older install made Aerial the default Home and the firmware took it: PatchWall then
+# Xiaomi where an older install made Orange the default Home and the firmware took it: PatchWall then
 # runs outside the home stack and the short press of the power key no longer sleeps the TV (#848).
 # Home goes back to PatchWall; the fix takes a reboot.
 if adb shell pm path com.mitv.tvhome 2>/dev/null | grep -q package: &&
@@ -58,14 +58,14 @@ if adb shell pm path com.mitv.tvhome 2>/dev/null | grep -q package: &&
     echo "Xiaomi: Home is PatchWall again; restart the TV once."
 fi
 
-# Aerial Lite (Android 4.x) takes over only as the home app the owner chose; nothing else to undo.
-LITE=app.orchard.tv.lite
+# Orange Lite (Android 4.x) takes over only as the home app the owner chose; nothing else to undo.
+LITE=app.orange.tv.lite
 LITE_HERE=$(adb shell pm path "$LITE" 2>/dev/null | grep -c package: || true)
 if [ "${1:-}" = --uninstall ]; then
   adb shell pm path "$PKG" 2>/dev/null | grep -q package: && adb uninstall "$PKG"
   [ "$LITE_HERE" = 0 ] || adb uninstall "$LITE"
 elif [ "$LITE_HERE" != 0 ]; then
-  echo "Aerial Lite stays the home screen while it is installed and chosen. Run with --uninstall, or on the TV: Settings > Apps > Aerial Lite > Clear defaults, then press Home and pick the TV's launcher."
+  echo "Orange Lite stays the home screen while it is installed and chosen. Run with --uninstall, or on the TV: Settings > Apps > Orange Lite > Clear defaults, then press Home and pick the TV's launcher."
 fi
 adb shell input keyevent KEYCODE_HOME
 echo "Home now: $(adb shell cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME -c android.intent.category.DEFAULT | tail -n 1 | tr -d '\r')"

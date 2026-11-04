@@ -17,6 +17,11 @@
     <string name="cc_home_guarded">桌面守护已开启</string>
     <string name="cc_home_not_default">尚未设为默认桌面</string>
     <string name="cc_setup_title">设为主屏幕</string>
+    <string name="cc_about">关于</string>
+    <string name="cc_about_title">关于 · 开源许可</string>
+    <string name="cc_about_origin">Orange 基于 Aerial 修改，Aerial 以 MIT 许可发布。它的版权声明与许可全文完整保留在这里。</string>
+    <string name="cc_about_components">第三方组件</string>
+    <string name="cc_about_licence">许可全文</string>
     <string name="cc_setup_body">只装了 APK 时，Orange 能打开，但按主页键、开机和待机后还是原来的桌面。</string>
     <string name="cc_setup_guard">打开桌面守护</string>
     <string name="cc_setup_guard_where">无障碍</string>
