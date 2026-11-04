@@ -112,33 +112,42 @@ def legacy_icon(px):
     return img.resize((px, px), Image.LANCZOS)
 
 
-def banner(scale):
+def banner(scale, centre=False):
     w, h = 320 * scale * SS, 180 * scale * SS
     k_screen = w / 320.0          # banner dp -> drawn px
     img = _gradient(320 * scale, 180 * scale).resize((w, h), Image.BILINEAR).convert("RGBA")
     # The mark is 57.1 dp tall in its own canvas. At 48 dp it reads as the same weight as the
-    # 48 dp-wide arch it replaces, and its stem still clears the banner's top edge. The wordmark
-    # starts at 104, not 106: at the old gap the ring and the O ran together as "ǒOrange".
+    # 48 dp-wide arch it replaces, and its stem still clears the banner's top edge.
     k = 48 / 57.1 * k_screen
     mx, my = 72 * k_screen, 90 * k_screen      # the mark's own bounding box centre
     dx = mx - 48.6 * k
     dy = my - 53.85 * k
-    img.alpha_composite(mark_layer(w, k, dx, dy, ring=(255, 255, 255, 255), stem=(255, 255, 255, 255)))
-    draw = ImageDraw.Draw(img)
-    # "Orange" is wider than the "Aerial" this banner was drawn for, so the wordmark is sized to
-    # the space right of the mark instead of running off the 320 dp edge.
-    text = "Orange"
-    x = 104 * k_screen
-    limit = (320 - 34) * k_screen - x
+    # The mark *is* the "o" of the wordmark, so the text after it is "range" and the banner reads
+    # ǒrange. It used to say "Orange" behind the mark, which read as ǒOrange — two o's in a row.
+    # Starting the text at the mark's measured right edge keeps the pair joined however the mark
+    # is scaled; a hard-coded x would drift the moment the mark's size changes.
+    text = "range"
+    gap = 3 * k_screen                        # one letter-space at this size, measured by eye
+    limit = (320 - 34) * k_screen
+    mark_left, mark_right = mark_layer(w, k, dx, dy).getbbox()[0::2]
+    probe = ImageDraw.Draw(Image.new("RGBA", (1, 1)))
     size = 50
     while size > 20:
         font = _text_font(round(size * k_screen))
-        left, top, right, bottom = draw.textbbox((0, 0), text, font=font)
-        if right - left <= limit:
+        left, top, right, bottom = probe.textbbox((0, 0), text, font=font)
+        if mark_right + gap + (right - left) <= limit:
             break
         size -= 1
+    x = mark_right + gap - left               # cancel the glyph's own left side bearing
+    if centre:
+        # Dropping the O left the group sitting 33 dp off-centre, so the mark's old 72 dp anchor
+        # no longer means anything. Centre the mark-plus-text block instead of trusting it.
+        group = (x + right) - mark_left
+        shift = (w - group) / 2 - mark_left
+        dx, x = dx + shift, x + shift
+    img.alpha_composite(mark_layer(w, k, dx, dy, ring=(255, 255, 255, 255), stem=(255, 255, 255, 255)))
     y = (h - (bottom - top)) / 2 - top + 2 * k_screen
-    draw.text((x, y), text, font=font, fill=(255, 255, 255, 255))
+    ImageDraw.Draw(img).text((x, y), text, font=font, fill=(255, 255, 255, 255))
     return img.convert("RGB").resize((320 * scale, 180 * scale), Image.LANCZOS)
 
 
@@ -163,5 +172,7 @@ if __name__ == "__main__":
     for density, scale in (("xhdpi", 2), ("xxhdpi", 3)):
         out = os.path.join(RES, f"drawable-{density}", "banner.png")
         os.makedirs(os.path.dirname(out), exist_ok=True)
-        banner(scale).save(out, optimize=True)
+        # Centred: the mark is the whole left edge of the wordmark now, so the old left-aligned
+        # 72 dp anchor would leave 33 dp more white on the right than on the left.
+        banner(scale, centre=True).save(out, optimize=True)
         print(out)
