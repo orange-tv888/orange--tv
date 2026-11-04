@@ -8,8 +8,12 @@
 
 ## 进行中
 
-无。`26.4.3-release-hardening`（发版脚本收口）已完成实现与 QA，见 `docs/spec/26.4.3-release-hardening.md`、
-`docs/qa/26.4.3-release-hardening.md`。**工具改动不升版本号、不重发 APK。**
+`26.5.0-release-readiness`（**只做准备，未授权发布**）：自查 + 清单已出，见 `docs/release/CHECKLIST.md`
+（48 条：19 已验 / 9 阻塞 / 3 待整改 / 5 待你拍板 / 12 未验）。
+阻塞项是许可合规（A2/A3/A4）、门面仍是上游 Aerial（F1/F2）、扫码更新指向 404（C6）。
+
+无代码改动。上一个需求 `26.4.3-release-hardening`（发版脚本收口）已完成实现与 QA，见
+`docs/spec/26.4.3-release-hardening.md`、`docs/qa/26.4.3-release-hardening.md`。
 
 ## 下一步候选
 
