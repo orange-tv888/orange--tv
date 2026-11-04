@@ -1,7 +1,7 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.util.Properties
 
-// Aerial Lite: Home for Android 4.0-4.4 TVs, which the Compose app cannot run on (Compose needs
+// Film Lite: Home for Android 4.0-4.4 TVs, which the Compose app cannot run on (Compose needs
 // Android 5.0). Plain Views, no AndroidX, so the APK stays small and Dalvik has little to load.
 // Performance comes before looks here: see docs/LITE.md.
 plugins {
@@ -23,7 +23,7 @@ android {
         versionName = "1.11"
     }
 
-    // Signed with the same key as Aerial (see app/build.gradle.kts and docs/HANDOFF.md).
+    // Signed with the same key as Film (see app/build.gradle.kts and docs/HANDOFF.md).
     val signingProps = rootProject.file("local/signing.properties")
     signingConfigs {
         if (signingProps.exists()) {
@@ -70,7 +70,7 @@ kotlin {
 // catalog, the Inter font and the Chinese city list (assets), the glyphs' path data, the hand-made
 // tile recipes and the city lookup (sources, moved into Lite's package).
 val copyAerials by tasks.registering(Copy::class) {
-    from(rootProject.file("app/src/main/assets/aerials.json"))
+    from(rootProject.file("app/src/main/assets/films.json"))
     from(rootProject.file("app/src/main/res/font/inter.ttf"))
     from(rootProject.file("app/src/main/assets/cities-cn.tsv"))
     // Per-model corrections, read by DeviceProfile (MitvPanel and Brightness ask it).
@@ -125,7 +125,7 @@ dependencies {
 }
 
 // `./gradlew :lite:assembleRelease -Pnohome`: a build for trying Lite on a TV that runs the full
-// app, as a plain app from Aerial's grid. Without the HOME declaration it leaves the TV's choice
+// app, as a plain app from Film's grid. Without the HOME declaration it leaves the TV's choice
 // of Home alone (a new Home candidate can reset it).
 if (project.hasProperty("nohome")) {
     val noHomeManifest = layout.buildDirectory.file("generated/nohome/AndroidManifest.xml")

@@ -1,7 +1,7 @@
 package app.orange.tv.wallpaper
 
 import android.content.Context
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import android.media.MediaCodecInfo
 import android.media.MediaCodecList
 import android.media.MediaFormat
@@ -13,11 +13,11 @@ import org.json.JSONObject
 import java.util.Locale
 
 /**
- * Apple TV's aerial screensaver films. Orange ships only the catalogue (assets/aerials.json, built
+ * Apple TV's aerial screensaver films. Orange ships only the catalogue (assets/films.json, built
  * from Apple's public resources-16.tar): addresses and place names. The films themselves stream from
  * Apple's servers while the screensaver runs, the way the Apple TV plays them.
  */
-class Orange(
+class Film(
     val id: String,
     val label: String,
     val category: String,
@@ -32,15 +32,15 @@ class Orange(
 ) {
     fun captionAt(seconds: Int): String = captions.lastOrNull { it.first <= seconds }?.second ?: label
 
-    fun url(quality: AerialQuality): String = when (quality) {
-        AerialQuality.DolbyVision -> dolbyVision
-        AerialQuality.Uhd -> uhd
+    fun url(quality: FilmQuality): String = when (quality) {
+        FilmQuality.DolbyVision -> dolbyVision
+        FilmQuality.Uhd -> uhd
         else -> url
     }
 }
 
 /** Which of Apple's files the screensaver streams. Auto takes the best this TV can play. */
-enum class AerialQuality(val key: String) {
+enum class FilmQuality(val key: String) {
     Auto("auto"), Hd("1080p"), Uhd("4k"), DolbyVision("dolby_vision");
 
     companion object {
@@ -56,18 +56,18 @@ enum class AerialQuality(val key: String) {
  * lists Dolby Vision: Apple's HDR files are profile 5, which has no HDR10 base layer to fall back
  * on, and decoded by anything else they come out green and purple.
  */
-object AerialFormats {
+object FilmFormats {
     @Volatile
-    private var probed: Set<AerialQuality>? = null
+    private var probed: Set<FilmQuality>? = null
 
-    fun supported(context: Context): Set<AerialQuality> = probed ?: probe(context).also { probed = it }
+    fun supported(context: Context): Set<FilmQuality> = probed ?: probe(context).also { probed = it }
 
     /** [chosen], or for Auto the best supported; a choice the TV cannot play falls back too. */
-    fun resolve(context: Context, chosen: AerialQuality): AerialQuality {
+    fun resolve(context: Context, chosen: FilmQuality): FilmQuality {
         val ok = supported(context)
-        return if (chosen != AerialQuality.Auto && chosen in ok) chosen
-        else listOf(AerialQuality.DolbyVision, AerialQuality.Uhd).firstOrNull { it in ok && (chosen == AerialQuality.Auto || it.ordinal < chosen.ordinal) }
-            ?: AerialQuality.Hd
+        return if (chosen != FilmQuality.Auto && chosen in ok) chosen
+        else listOf(FilmQuality.DolbyVision, FilmQuality.Uhd).firstOrNull { it in ok && (chosen == FilmQuality.Auto || it.ordinal < chosen.ordinal) }
+            ?: FilmQuality.Hd
     }
 
     /**
@@ -75,8 +75,8 @@ object AerialFormats {
      * shows the tiles over the film with Dolby's picture settings. A screensaver that carries the
      * wallpaper's film on plays this too (Screensaver), so the two are one, with no switch.
      */
-    fun forWallpaper(context: Context): AerialQuality =
-        resolve(context, AerialSettings.aerialQuality).let { if (it == AerialQuality.DolbyVision) AerialQuality.Uhd else it }
+    fun forWallpaper(context: Context): FilmQuality =
+        resolve(context, OrangeSettings.filmQuality).let { if (it == FilmQuality.DolbyVision) FilmQuality.Uhd else it }
 
     /**
      * Whether a screensaver of aerials over the aerial wallpaper carries the wallpaper's film on, in
@@ -85,21 +85,21 @@ object AerialFormats {
      * chosen by hand is played whatever that costs, from the wallpaper's film and moment.
      */
     fun screensaverCarriesWallpaper(context: Context): Boolean =
-        !(AerialSettings.aerialQuality == AerialQuality.DolbyVision && AerialQuality.DolbyVision in supported(context))
+        !(OrangeSettings.filmQuality == FilmQuality.DolbyVision && FilmQuality.DolbyVision in supported(context))
 
     /** What a screensaver of aerials starts in; [overWallpaper]: it begins from the aerial wallpaper's film. */
-    fun forScreensaver(context: Context, overWallpaper: Boolean): AerialQuality =
+    fun forScreensaver(context: Context, overWallpaper: Boolean): FilmQuality =
         if (overWallpaper && screensaverCarriesWallpaper(context)) forWallpaper(context)
-        else resolve(context, AerialSettings.aerialQuality)
+        else resolve(context, OrangeSettings.filmQuality)
 
     /** One step down, after a decoder failed on [quality]. */
-    fun lower(quality: AerialQuality): AerialQuality = when (quality) {
-        AerialQuality.DolbyVision -> AerialQuality.Uhd
-        else -> AerialQuality.Hd
+    fun lower(quality: FilmQuality): FilmQuality = when (quality) {
+        FilmQuality.DolbyVision -> FilmQuality.Uhd
+        else -> FilmQuality.Hd
     }
 
-    private fun probe(context: Context): Set<AerialQuality> {
-        val found = mutableSetOf(AerialQuality.Hd)
+    private fun probe(context: Context): Set<FilmQuality> {
+        val found = mutableSetOf(FilmQuality.Hd)
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return found
         val codecs = runCatching { MediaCodecList(MediaCodecList.REGULAR_CODECS).codecInfos.filter { !it.isEncoder } }.getOrDefault(emptyList())
         fun caps(mime: String) = codecs.mapNotNull { info ->
@@ -109,7 +109,7 @@ object AerialFormats {
         val uhd = caps(MediaFormat.MIMETYPE_VIDEO_HEVC).any { c ->
             runCatching { c.videoCapabilities.areSizeAndRateSupported(3840, 2160, 30.0) }.getOrDefault(false)
         }
-        if (uhd) found += AerialQuality.Uhd
+        if (uhd) found += FilmQuality.Uhd
         val dvDecoder = caps(MediaFormat.MIMETYPE_VIDEO_DOLBY_VISION).any { c ->
             c.profileLevels.any {
                 it.profile == MediaCodecInfo.CodecProfileLevel.DolbyVisionProfileDvheStn &&
@@ -121,27 +121,27 @@ object AerialFormats {
             context.getSystemService<WindowManager>()?.defaultDisplay?.hdrCapabilities?.supportedHdrTypes
                 ?.contains(Display.HdrCapabilities.HDR_TYPE_DOLBY_VISION) == true
         }.getOrDefault(false)
-        if (uhd && dvDecoder && dvDisplay) found += AerialQuality.DolbyVision
+        if (uhd && dvDecoder && dvDisplay) found += FilmQuality.DolbyVision
         return found
     }
 }
 
-object Aerials {
+object Films {
     @Volatile
-    private var cache: List<Orange>? = null
+    private var cache: List<Film>? = null
 
-    fun all(context: Context): List<Orange> = cache ?: synchronized(this) {
+    fun all(context: Context): List<Film> = cache ?: synchronized(this) {
         cache ?: load(context).also { cache = it }
     }
 
-    private fun load(context: Context): List<Orange> {
+    private fun load(context: Context): List<Film> {
         val zh = Locale.getDefault().language == "zh"
-        val root = JSONObject(context.assets.open("aerials.json").bufferedReader().use { it.readText() })
+        val root = JSONObject(context.assets.open("films.json").bufferedReader().use { it.readText() })
         val arr = root.getJSONArray("videos")
         return (0 until arr.length()).map { i ->
             val o = arr.getJSONObject(i)
             val caps = o.getJSONArray("captions")
-            Orange(
+            Film(
                 id = o.getString("id"),
                 label = o.getString("label"),
                 category = o.getString("category"),

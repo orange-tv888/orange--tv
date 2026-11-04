@@ -19,7 +19,7 @@ import java.util.concurrent.Executors
  *   adb shell dumpsys activity app.orange.tv/.MainActivity
  * and, in a diagnostic build (`./gradlew -Pdiag ...`) or after
  *   adb shell am broadcast -a app.orange.tv.CONFIG -n app.orange.tv/.guard.ConfigReceiver --ez diag true
- * also written to Android/data/app.orange.tv/files/aerial-diag.log, which `adb pull` can fetch.
+ * also written to Android/data/app.orange.tv/files/orange-diag.log, which `adb pull` can fetch.
  */
 object DiagLog {
     private const val TAG = "OrangeDiag"
@@ -62,7 +62,7 @@ object DiagLog {
     fun init(context: Context) {
         if (file != null || !enabled(context)) return
         val dir = context.getExternalFilesDir(null) ?: context.filesDir
-        file = File(dir, "aerial-diag.log")
+        file = File(dir, "orange-diag.log")
         i("log file ${file?.absolutePath}")
     }
 
@@ -78,7 +78,7 @@ object DiagLog {
         val f = file ?: return
         writer.execute {
             runCatching {
-                if (f.length() > FILE_LIMIT) f.renameTo(File(f.parentFile, "aerial-diag.old.log"))
+                if (f.length() > FILE_LIMIT) f.renameTo(File(f.parentFile, "orange-diag.old.log"))
                 val fresh = !f.exists()
                 f.appendText(line + "\n")
                 // Created 0600 on Xiaomi MiTV-MFTR0 (Android 14), which adb pull could not read.

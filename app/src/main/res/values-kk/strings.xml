@@ -17,7 +17,7 @@
     <string name="cc_setup_title">Orange-ді басты экран жасаңыз</string>
     <string name="cc_about">Бағдарлама туралы</string>
     <string name="cc_about_title">Бағдарлама туралы · Лицензиялар</string>
-    <string name="cc_about_origin">Orange — MIT лицензиясымен шығарылған Aerial бағдарламасының өзгертілген нұсқасы. Авторлық құқық туралы хабарлама мен лицензия мәтіні осында толық сақталған.</string>
+    <string name="cc_about_origin">Orange — MIT лицензиясымен шығарылған Film бағдарламасының өзгертілген нұсқасы. Авторлық құқық туралы хабарлама мен лицензия мәтіні осында толық сақталған.</string>
     <string name="cc_about_components">Үшінші тарап компоненттері</string>
     <string name="cc_about_licence">Лицензия мәтіні</string>
     <string name="cc_setup_body">Orange тек APK-дан орнатылса, ол ашылады, бірақ «Басты бет» түймесі, қосу және күту режимінен шығу бұрынғы лаунчерге апара береді.</string>

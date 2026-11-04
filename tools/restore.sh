@@ -38,9 +38,16 @@ else
   adb shell settings put secure enabled_accessibility_services "'$REST'"
 fi
 # Hisense VIDAA: put back the launcher install.sh replaced in persist.vt.use_home_pkg.
-VT_HOME=$(adb shell settings get global aerial_vt_home_pkg | tr -d '\r')
+# The key was aerial_vt_home_pkg before 26.5.0; a TV that ran install.sh before that has the old
+# launcher under the old name, so both are read.
+VT_HOME=$(adb shell settings get global orange_vt_home_pkg | tr -d '\r')
+[ "$VT_HOME" = null ] && VT_HOME=""
+if [ -z "$VT_HOME" ]; then
+  VT_HOME=$(adb shell settings get global aerial_vt_home_pkg | tr -d '\r')
+fi
 if [ -n "$VT_HOME" ] && [ "$VT_HOME" != null ]; then
   adb shell setprop persist.vt.use_home_pkg "$VT_HOME"
+  adb shell settings delete global orange_vt_home_pkg >/dev/null
   adb shell settings delete global aerial_vt_home_pkg >/dev/null
 elif [ "$(adb shell getprop persist.vt.use_home_pkg | tr -d '\r')" = "$PKG" ] &&
      adb shell pm path com.jamdeo.tv.vod 2>/dev/null | grep -q package:; then

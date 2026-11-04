@@ -1,9 +1,9 @@
 {
-  "version": "26.4.2",
+  "version": "26.5.0",
   "apk": "https://ghproxy.net/https://raw.githubusercontent.com/orange-tv888/orange--tv/main/update/orange.apk",
   "notes": [
-    "开机动画：Orange 玻璃字标落下，落到桌面时点亮",
-    "开机更快：图标分批解码，不再卡在灰面",
-    "开机后遥控器立刻可用，不再停顿一下"
+    "图标换成橙色，界面统一叫 Orange",
+    "控制中心新增「关于」：可查看开源许可与所用组件",
+    "修好扫码更新与安装脚本；不再请求第三方图标服务"
   ]
 }

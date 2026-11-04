@@ -11,7 +11,7 @@ import android.provider.Settings
 import app.orange.tv.apps.IconLibrary
 import app.orange.tv.guard.GuardSetup
 import app.orange.tv.system.DeviceClass
-import app.orange.tv.wallpaper.AerialQuality
+import app.orange.tv.wallpaper.FilmQuality
 import java.security.MessageDigest
 
 /**
@@ -57,7 +57,7 @@ enum class Effects(val key: String) {
 }
 
 /** Orange's own preferences. Compose state, written on the main thread only. */
-object AerialSettings {
+object OrangeSettings {
     private const val PREFS = "settings"
     private var started = false
     private lateinit var app: Context
@@ -171,7 +171,7 @@ object AerialSettings {
     val screensaverChoices = listOf(2, 5, 10, 20, NEVER)
 
     /** Which of Apple's files the aerial screensaver plays; Auto is the best this TV decodes (issues #198, #217). */
-    var aerialQuality by mutableStateOf(AerialQuality.Auto); private set
+    var filmQuality by mutableStateOf(FilmQuality.Auto); private set
 
     var effects by mutableStateOf(Effects.Auto); private set
 
@@ -216,7 +216,9 @@ object AerialSettings {
         }
         backStartsScreensaver = prefs.getBoolean("back_starts_screensaver", true)
         screensaverMinutes = prefs.getInt("screensaver_minutes", DEFAULT_SCREENSAVER_MINUTES)
-        aerialQuality = AerialQuality.of(prefs.getString("aerial_quality", null))
+        // The key was "aerial_quality" before 26.5.0; reading it too keeps a choice made on an
+        // older build instead of dropping back to Auto.
+        filmQuality = FilmQuality.of(prefs.getString("film_quality", null) ?: prefs.getString("aerial_quality", null))
         effects = Effects.of(prefs.getString("effects", null))
         lowEnd = DeviceClass.lowEnd(app)
     }
@@ -239,7 +241,9 @@ object AerialSettings {
     val locked: Boolean get() = pinSet && SystemClock.elapsedRealtime() > unlockedUntil
 
     fun unlock(pin: String): Boolean {
-        if (hash(pin) != pinHash) return false
+        // "aerial" is the salt every PIN set before 26.5.0 was hashed with; without it the owner
+        // of a TV that already had a PIN could not open the settings any more.
+        if (hash(pin) != pinHash && hash(pin, "aerial") != pinHash) return false
         unlockedUntil = SystemClock.elapsedRealtime() + UNLOCK_MS
         return true
     }
@@ -248,7 +252,7 @@ object AerialSettings {
 
     /** Sets the PIN, digits or [arrows] (U, D, L, R), or turns it off with null. */
     fun choosePin(pin: String?, arrows: Boolean = false) {
-        pinHash = pin?.let(::hash)
+        pinHash = pin?.let { hash(it) }
         pinSet = pinHash != null
         pinArrows = pin != null && arrows
         // Locked from the start: a parent who sets the PIN and hands the remote over expects it
@@ -257,8 +261,8 @@ object AerialSettings {
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString("pin_hash", pinHash); putBoolean("pin_arrows", pinArrows) }
     }
 
-    private fun hash(pin: String): String =
-        MessageDigest.getInstance("SHA-256").digest("aerial:$pin".toByteArray()).joinToString("") { "%02x".format(it) }
+    private fun hash(pin: String, prefix: String = "orange"): String =
+        MessageDigest.getInstance("SHA-256").digest("$prefix:$pin".toByteArray()).joinToString("") { "%02x".format(it) }
 
     fun chooseOneRowHome(on: Boolean) {
         oneRowHome = on
@@ -326,9 +330,9 @@ object AerialSettings {
         app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putBoolean("back_starts_screensaver", on) }
     }
 
-    fun chooseAerialQuality(quality: AerialQuality) {
-        aerialQuality = quality
-        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString("aerial_quality", quality.key) }
+    fun chooseFilmQuality(quality: FilmQuality) {
+        filmQuality = quality
+        app.getSharedPreferences(PREFS, Context.MODE_PRIVATE).edit { putString("film_quality", quality.key) }
     }
 
     fun chooseScreensaverMinutes(minutes: Int) {

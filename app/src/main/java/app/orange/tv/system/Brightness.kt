@@ -59,11 +59,21 @@ object Brightness {
      */
     private var mitvLevel: Int? = null
 
-    private const val PREFS = "aerial"
+    private const val PREFS = "orange"
+    /** Where the level lived before 26.5.0; carried over once so the panel keeps its setting. */
+    private const val PREFS_BEFORE_RENAME = "aerial"
     private const val KEY_MITV_LEVEL = "mitv_backlight"
 
     private fun storedLevel(context: Context): Int? {
-        val value = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE).getInt(KEY_MITV_LEVEL, -1)
+        val prefs = context.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        var value = prefs.getInt(KEY_MITV_LEVEL, -1)
+        if (value !in 1..100) {
+            val old = context.getSharedPreferences(PREFS_BEFORE_RENAME, Context.MODE_PRIVATE).getInt(KEY_MITV_LEVEL, -1)
+            if (old in 1..100) {
+                prefs.edit().putInt(KEY_MITV_LEVEL, old).apply()
+                value = old
+            }
+        }
         return if (value in 1..100) value else null
     }
 

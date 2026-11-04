@@ -22,10 +22,10 @@ import javax.net.ssl.TrustManagerFactory
 
 class Film(val url: String, val caption: String?)
 
-/** Apple's aerial films (assets/aerials.json, shared with the full app): the 1080p H.264 file of each. */
-object Aerials {
+/** Apple's aerial films (assets/films.json, shared with the full app): the 1080p H.264 file of each. */
+object Films {
     fun load(context: Context): List<Film> = runCatching {
-        val json = context.assets.open("aerials.json").use { it.readBytes().toString(Charsets.UTF_8) }
+        val json = context.assets.open("films.json").use { it.readBytes().toString(Charsets.UTF_8) }
         val videos = JSONObject(json).getJSONArray("videos")
         val zh = Locale.getDefault().language == "zh"
         List(videos.length()) { i ->

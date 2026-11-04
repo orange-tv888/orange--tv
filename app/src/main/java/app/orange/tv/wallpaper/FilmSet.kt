@@ -1,11 +1,12 @@
 package app.orange.tv.wallpaper
 
 import android.content.Context
+import android.content.SharedPreferences
 import androidx.core.content.edit
 import java.time.LocalDate
 
 /**
- * The few aerial films Orange plays, kept on disk (AerialStream), shared by the aerial wallpaper and
+ * The few aerial films Orange plays, kept on disk (FilmStream), shared by the aerial wallpaper and
  * every screensaver of aerials in every format, so going from one to the other is the same film
  * (owner, 2026-10-29: "从杜比的屏保到航拍壁纸切换的时候，最好是同一个视频").
  *
@@ -18,12 +19,37 @@ import java.time.LocalDate
  * Until 1.69 every screensaver shuffled all 114 films, and the wallpaper picked its own: the two
  * rarely matched, and every film was fetched again each time (issue #843).
  */
-object AerialSet {
+object FilmSet {
     const val MAX = 3
 
-    private const val PREFS = "aerial_set"
+    private const val PREFS = "orange_set"
 
-    private fun prefs(context: Context) = context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+    /**
+     * Where this lived before 26.5.0. A TV that has been running an older build has the film that
+     * was playing and the day's pick in there, so the first use copies the whole file across; from
+     * then on the old one is never read or written again.
+     */
+    private const val PREFS_BEFORE_RENAME = "aerial_set"
+
+    private fun prefs(context: Context): SharedPreferences {
+        val app = context.applicationContext
+        val prefs = app.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
+        if (prefs.all.isEmpty()) {
+            val old = app.getSharedPreferences(PREFS_BEFORE_RENAME, Context.MODE_PRIVATE).all
+            if (old.isNotEmpty()) prefs.edit {
+                old.forEach { (key, value) ->
+                    when (value) {
+                        is String -> putString(key, value)
+                        is Int -> putInt(key, value)
+                        is Boolean -> putBoolean(key, value)
+                        is Long -> putLong(key, value)
+                        is Float -> putFloat(key, value)
+                    }
+                }
+            }
+        }
+        return prefs
+    }
 
     private fun ids(context: Context): List<String> =
         prefs(context).getString("films", null)?.split(',')?.filter { it.isNotEmpty() }.orEmpty()
@@ -35,8 +61,8 @@ object AerialSet {
 
     /** The set, newest first; on the first use, the film the wallpaper last showed, else any one. */
     @Synchronized
-    fun films(context: Context): List<Orange> {
-        val all = Aerials.all(context)
+    fun films(context: Context): List<Film> {
+        val all = Films.all(context)
         val known = ids(context).mapNotNull { id -> all.firstOrNull { it.id == id } }
         if (known.isNotEmpty()) return known
         val first = runCatching { Wallpapers.liveSpot() }.getOrNull()?.first?.let { id -> all.firstOrNull { it.id == id } } ?: all.random()
@@ -49,9 +75,9 @@ object AerialSet {
      * round to those before. A film not in the set (the wallpaper's from before 1.70) joins it.
      */
     @Synchronized
-    fun playlist(context: Context, current: String?): List<Orange> {
+    fun playlist(context: Context, current: String?): List<Film> {
         var set = films(context)
-        val all = Aerials.all(context)
+        val all = Films.all(context)
         if (current != null && set.none { it.id == current }) {
             all.firstOrNull { it.id == current }?.let { film ->
                 set = (listOf(film) + set).take(MAX)
@@ -64,8 +90,8 @@ object AerialSet {
 
     /** The film a new day brings in, chosen ahead so the screensaver's start can be fetched first. */
     @Synchronized
-    fun nextNew(context: Context): Orange {
-        val all = Aerials.all(context)
+    fun nextNew(context: Context): Film {
+        val all = Films.all(context)
         prefs(context).getString("next", null)?.let { id -> all.firstOrNull { it.id == id } }?.let { return it }
         val kept = ids(context).toSet()
         val film = all.filter { it.id !in kept }.randomOrNull() ?: all.random()
@@ -75,12 +101,12 @@ object AerialSet {
 
     /** A film joins the set as its newest, the oldest leaves, and the next new one is chosen afresh. */
     @Synchronized
-    fun addNew(context: Context): Orange {
+    fun addNew(context: Context): Film {
         val film = nextNew(context)
         val set = (listOf(film.id) + ids(context).filter { it != film.id }).take(MAX)
         save(context, set, today())
         prefs(context).edit { remove("next") }
-        app.orange.tv.system.DiagLog.i("aerial films now ${set.joinToString(",") { it.take(8) }}")
+        app.orange.tv.system.DiagLog.i("films now ${set.joinToString(",") { it.take(8) }}")
         return film
     }
 
@@ -88,7 +114,7 @@ object AerialSet {
     fun due(context: Context): Boolean = prefs(context).getString("day", null) != today()
 
     /** Today's new film, if today has not had one: it joins the set (see [addNew]). */
-    fun takeDaily(context: Context): Orange? = if (due(context)) addNew(context) else null
+    fun takeDaily(context: Context): Film? = if (due(context)) addNew(context) else null
 
     /** Today's date; a test moves it on. */
     internal var today: () -> String = { LocalDate.now().toString() }

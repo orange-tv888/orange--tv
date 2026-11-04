@@ -9,7 +9,7 @@ import android.os.SystemClock
 import android.provider.Settings
 import android.view.KeyEvent
 import app.orange.tv.R
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.settings.UiSounds
 
 /**
@@ -45,7 +45,7 @@ object Sounds {
 
     /** Loads Orange's own set ahead of the first press when it is the one chosen; loading takes a moment. */
     fun prepare() {
-        if (AerialSettings.uiSounds == UiSounds.Orange) ownPool()
+        if (OrangeSettings.uiSounds == UiSounds.Orange) ownPool()
     }
 
     /** Orange's own set, loaded the first time it is needed. */
@@ -117,7 +117,7 @@ object Sounds {
     }
 
     private fun play(effect: Int, kind: Kind) {
-        when (AerialSettings.uiSounds) {
+        when (OrangeSettings.uiSounds) {
             UiSounds.Off -> Unit
             UiSounds.Tv -> playTvEffect(effect)
             UiSounds.Orange -> {

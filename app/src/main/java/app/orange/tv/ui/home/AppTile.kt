@@ -88,7 +88,7 @@ import kotlinx.coroutines.withContext
 import androidx.compose.runtime.mutableIntStateOf
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.settings.FocusStyle
 import app.orange.tv.system.Sounds
 import app.orange.tv.ui.components.isSelect
@@ -200,7 +200,7 @@ fun AppTile(
         label = "tile-lift",
     )
     val ring by animateFloatAsState(
-        targetValue = if (AerialSettings.focusStyle == FocusStyle.HighContrast) 1f else 0f,
+        targetValue = if (OrangeSettings.focusStyle == FocusStyle.HighContrast) 1f else 0f,
         animationSpec = tween(200, easing = Motion.EaseOut),
         label = "tile-ring",
     )
@@ -256,7 +256,7 @@ fun AppTile(
                 translationY = (1f - appear.value) * 18.dp.toPx()
             },
     ) {
-        if (lift > 0.01f && !AerialSettings.lite && DiagLayers.shows("shadow")) {
+        if (lift > 0.01f && !OrangeSettings.lite && DiagLayers.shows("shadow")) {
             // A lifted tile casts a soft shadow below it, as cards do on tvOS. The system's
             // elevation shadow is too faint to read on a TV; this one is baked, so it costs one
             // image draw while a tile is lifted.
@@ -433,7 +433,7 @@ fun AppTile(
                     // Read here so the tile draws again when the faces it waits for are made.
                     TileFaces.version
                     // Lite: no sheen (a shader per frame) and no parallax on the focused tile.
-                    val lite = AerialSettings.lite
+                    val lite = OrangeSettings.lite
                     scale(size.width / pw, size.height / ph, pivot = Offset.Zero) {
                         val made = face(pw, ph)
                         if (made != null) drawImage(made)
@@ -522,7 +522,7 @@ fun AppTile(
                 .graphicsLayer {
                     // Only the focused app shows its name. With every name shown, the others stay a
                     // little dimmer than the focused one.
-                    alpha = if (AerialSettings.showAllNames) 0.7f + 0.3f * lift else lift
+                    alpha = if (OrangeSettings.showAllNames) 0.7f + 0.3f * lift else lift
                     // Sits just under the lifted tile, and rises into place as it appears.
                     translationY = height.toPx() * (scale - 1f) / 2f - (1f - lift) * 6.dp.toPx() +
                         if (nameOnPlate) 0f else ring * ringIn * (RingGap + RingWidth).toPx() * scale
@@ -599,7 +599,7 @@ object TileFaces {
      * Sizes worked out exactly as AppTile's: a face of another size is simply made there.
      */
     suspend fun prepare(arts: List<TileArt>, screenW: Int, density: Float, focused: Boolean = false) = coroutineScope {
-        val tileW = restTileWidth((screenW / density).dp, AerialSettings.homeColumns).value * density
+        val tileW = restTileWidth((screenW / density).dp, OrangeSettings.homeColumns).value * density
         val tileH = tileW * 9f / 16f
         val w = tileW.roundToInt()
         val h = tileH.roundToInt()

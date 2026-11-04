@@ -65,7 +65,7 @@ import app.orange.tv.ui.components.Pressable
 import app.orange.tv.ui.components.consumeTaps
 import app.orange.tv.ui.components.dismissOnTap
 import app.orange.tv.ui.components.liquidGlass
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.ui.theme.Glyph
 import app.orange.tv.ui.theme.GlyphIcon
 import app.orange.tv.ui.theme.Motion
@@ -255,7 +255,7 @@ fun AppMenu(
                                 if (shownApp.shortcut == null) MenuRow(Glyph.Info, stringResource(R.string.menu_info), { onInfo(shownApp.key) })
                             }
                             // What the TV starts on, for homes that switch it on to watch television.
-                            val boots = shownApp.source?.let { it.id == AerialSettings.bootSource } ?: (shownApp.key == AerialSettings.bootApp)
+                            val boots = shownApp.source?.let { it.id == OrangeSettings.bootSource } ?: (shownApp.key == OrangeSettings.bootApp)
                             MenuRow(
                                 if (boots) Glyph.Check else Glyph.Power,
                                 stringResource(if (boots) R.string.menu_boot_off else R.string.menu_boot_on),

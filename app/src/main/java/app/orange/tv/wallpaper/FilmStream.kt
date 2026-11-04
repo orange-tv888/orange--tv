@@ -49,7 +49,7 @@ import java.io.File
  * TVs is the maker's own fork with its own network handling (TclNuPlayer on TCL 75S365C retried a
  * failing load 10 times over 34 s before reporting it, and every film started on a fresh connection).
  *
- * - One player per screensaver or wallpaper with the films kept (AerialSet) as a playlist, round and
+ * - One player per screensaver or wallpaper with the films kept (FilmSet) as a playlist, round and
  *   round, so the next film loads while the current one ends and they follow without a black gap.
  * - Short network timeouts and a single retry: a slow edge of Apple's CDN costs seconds, not a minute.
  * - These files keep their index (moov) at the very end, so a cold start is two round trips to Apple
@@ -60,7 +60,7 @@ import java.io.File
  *   asked for a kept copy rather than the same film fetched again and again).
  */
 @OptIn(UnstableApi::class)
-object AerialStream {
+object FilmStream {
     private const val TAG = "OrangeStream"
 
     /** The index is 115–170 KB in these files; a generous tail covers it. */
@@ -83,13 +83,13 @@ object AerialStream {
 
     @Volatile
     private var cache: SimpleCache? = null
-    private val evictor = AerialEvictor { keepBytes }
+    private val evictor = FilmEvictor { keepBytes }
 
     /** One instance per process: SimpleCache locks its folder, and Home and the system screensaver share it. */
     private fun cache(context: Context): SimpleCache {
         return cache ?: synchronized(this) {
             cache ?: run {
-                val dir = File(context.applicationContext.cacheDir, "aerials")
+                val dir = File(context.applicationContext.cacheDir, "films")
                 // The limit before the cache opens: it reads what is on disk on a thread of its own,
                 // and evicted down to 64 MB while the limit was still that (TCL MT5879, 320 MB to 172
                 // after a restart).
@@ -112,13 +112,13 @@ object AerialStream {
         .setConnectTimeoutMs(5_000)
         .setReadTimeoutMs(8_000)
 
-    fun url(film: Orange, quality: AerialQuality, overHttp: Boolean): String =
+    fun url(film: Film, quality: FilmQuality, overHttp: Boolean): String =
         film.url(quality).let { if (overHttp) it.replaceFirst("https://", "http://") else it }
 
     /** Keyed by film and quality, not address, so the cached opener serves HTTP and HTTPS alike. */
-    private fun key(film: Orange, quality: AerialQuality) = "${film.id}@${quality.key}"
+    private fun key(film: Film, quality: FilmQuality) = "${film.id}@${quality.key}"
 
-    fun mediaItem(film: Orange, quality: AerialQuality, overHttp: Boolean): MediaItem =
+    fun mediaItem(film: Film, quality: FilmQuality, overHttp: Boolean): MediaItem =
         MediaItem.Builder().setUri(url(film, quality, overHttp)).setMediaId(film.id).setCustomCacheKey(key(film, quality)).build()
 
     /**
@@ -127,7 +127,7 @@ object AerialStream {
      * the placeholder copies its frames out through the GPU (MStar's DIP), and keeps doing so on the
      * SurfaceView it is handed later: the film plays, but not in Dolby Vision (issue #754).
      */
-    fun player(context: Context, quality: AerialQuality, decodeOnScreen: Boolean = false): ExoPlayer {
+    fun player(context: Context, quality: FilmQuality, decodeOnScreen: Boolean = false): ExoPlayer {
         val cache = cache(context)
         val source = CacheDataSource.Factory()
             .setCache(cache)
@@ -141,8 +141,8 @@ object AerialStream {
             .setBufferDurationsMs(10_000, 30_000, 1_000, 2_000)
             .setTargetBufferBytes(
                 when (quality) {
-                    AerialQuality.DolbyVision -> 48
-                    AerialQuality.Uhd -> 32
+                    FilmQuality.DolbyVision -> 48
+                    FilmQuality.Uhd -> 32
                     else -> 24
                 } * 1024 * 1024,
             )
@@ -192,7 +192,7 @@ object AerialStream {
      * other format's player: the Dolby Vision screensaver going on from the aerial wallpaper's film,
      * and the wallpaper going on from the screensaver's.
      */
-    suspend fun prepareSeek(context: Context, film: Orange, quality: AerialQuality, overHttp: Boolean) =
+    suspend fun prepareSeek(context: Context, film: Film, quality: FilmQuality, overHttp: Boolean) =
         runInterruptible(Dispatchers.IO) {
             val cache = cache(context)
             val key = key(film, quality)
@@ -217,7 +217,7 @@ object AerialStream {
     private const val START_BYTES = 6L * 1024 * 1024
 
     /** A moment fetched ahead by [prepareStart]: film id, quality and where in it. */
-    class Start(val film: String, val quality: AerialQuality, val atMs: Long)
+    class Start(val film: String, val quality: FilmQuality, val atMs: Long)
 
     @Volatile
     var prepared: Start? = null
@@ -230,7 +230,7 @@ object AerialStream {
      * moment the wallpaper's film will be at then (MainActivity). The byte where that moment starts
      * comes from the film's index, read with Media3's MP4 extractor.
      */
-    suspend fun prepareStart(context: Context, film: Orange, quality: AerialQuality, overHttp: Boolean, atMs: Long) {
+    suspend fun prepareStart(context: Context, film: Film, quality: FilmQuality, overHttp: Boolean, atMs: Long) {
         prepareSeek(context, film, quality, overHttp)
         runInterruptible(Dispatchers.IO) {
             val cache = cache(context)
@@ -293,9 +293,9 @@ object AerialStream {
     }
 }
 
-/** Media3's least-recently-used evictor, with its limit read when it is needed ([AerialStream.keepBytes]). */
+/** Media3's least-recently-used evictor, with its limit read when it is needed ([FilmStream.keepBytes]). */
 @OptIn(UnstableApi::class)
-private class AerialEvictor(private val limit: () -> Long) : CacheEvictor {
+private class FilmEvictor(private val limit: () -> Long) : CacheEvictor {
     private val spans = java.util.TreeSet<CacheSpan> { a, b ->
         if (a.lastTouchTimestamp != b.lastTouchTimestamp) a.lastTouchTimestamp.compareTo(b.lastTouchTimestamp) else a.compareTo(b)
     }

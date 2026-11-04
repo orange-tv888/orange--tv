@@ -92,7 +92,7 @@ class SaverView(context: Context, mode: ScreensaverMode, private val proxy: Film
             setShadowLayer(Ui.px(4f), 0f, 0f, 0x66000000)
         }
         when (mode) {
-            ScreensaverMode.Orange -> films = Aerials.load(context).shuffled()
+            ScreensaverMode.Orange -> films = Films.load(context).shuffled()
             // The owner's own films carry no caption, as in the full app.
             ScreensaverMode.Videos -> films = ScreensaverVideos.all(context).shuffled().map { Film(it.file.toURI().toString(), null) }
             else -> Unit

@@ -55,7 +55,7 @@ class RevivalListener : NotificationListenerService() {
 
     override fun onListenerConnected() {
         if (destroyed) return
-        // The line docs/HANDOFF.md and the issues look for after a kill (logcat -s AerialGuard).
+        // The line docs/HANDOFF.md and the issues look for after a kill (logcat -s OrangeGuard).
         Log.i("OrangeGuard", "revived by the notification listener binding")
         trace("notification listener connected")
         // Keep the quick path on wake. The delayed checks also cover a binding that did not

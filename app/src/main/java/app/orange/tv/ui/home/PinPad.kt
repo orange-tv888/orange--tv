@@ -46,7 +46,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import app.orange.tv.R
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.ui.components.Pressable
 import app.orange.tv.ui.components.consumeTaps
 import app.orange.tv.ui.components.dismissOnTap
@@ -63,7 +63,7 @@ private const val PIN_LENGTH = 4
 
 /**
  * The parental PIN (issue #10): four digits, from the remote's number keys or the keypad on screen
- * (most remotes here have no number keys), or four arrow keys (AerialSettings.pinArrows).
+ * (most remotes here have no number keys), or four arrow keys (OrangeSettings.pinArrows).
  * [PinMode.Create] asks which kind, then asks twice and stores it.
  */
 @Composable
@@ -89,7 +89,7 @@ private fun PinPanel(mode: PinMode, onDone: () -> Unit, onCancel: () -> Unit) {
     var first by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<Int?>(null) }
     // Null while a new PIN's kind is still to be chosen.
-    var arrows by remember { mutableStateOf(if (mode == PinMode.Unlock) AerialSettings.pinArrows else null) }
+    var arrows by remember { mutableStateOf(if (mode == PinMode.Unlock) OrangeSettings.pinArrows else null) }
     val one = remember { FocusRequester() }
     val choice = remember { FocusRequester() }
     val pad = remember { FocusRequester() }
@@ -106,10 +106,10 @@ private fun PinPanel(mode: PinMode, onDone: () -> Unit, onCancel: () -> Unit) {
 
     fun complete(pin: String) {
         when (mode) {
-            PinMode.Unlock -> if (AerialSettings.unlock(pin)) onDone() else error = R.string.pin_wrong
+            PinMode.Unlock -> if (OrangeSettings.unlock(pin)) onDone() else error = R.string.pin_wrong
             PinMode.Create -> when (val earlier = first) {
                 null -> { first = pin; error = null }
-                pin -> { AerialSettings.choosePin(pin, arrows = arrows == true); onDone() }
+                pin -> { OrangeSettings.choosePin(pin, arrows = arrows == true); onDone() }
                 else -> { first = null; error = R.string.pin_mismatch }
             }
         }

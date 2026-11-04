@@ -39,7 +39,7 @@ import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.DpOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.ui.theme.LocalReducedMotion
 import app.orange.tv.ui.theme.Motion
 import app.orange.tv.ui.theme.Type
@@ -73,7 +73,7 @@ internal fun FlipClockSaver(now: LocalDateTime) {
     // 2.4 s move, too slow to read as movement, and a card's turn lasts 0.6 s, so the two never
     // fight for the same frames. Nothing at all with anti-burn-in off or the TV's animations off.
     val minuteTick = now.withSecond(0).withNano(0)
-    val still = LocalReducedMotion.current || !AerialSettings.burnIn
+    val still = LocalReducedMotion.current || !OrangeSettings.burnIn
     val wander = remember(minuteTick, still) {
         if (still) {
             DpOffset.Zero

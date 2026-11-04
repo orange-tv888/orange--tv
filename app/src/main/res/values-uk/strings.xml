@@ -17,7 +17,7 @@
     <string name="cc_setup_title">Зробіть Orange головним екраном</string>
     <string name="cc_about">Про програму</string>
     <string name="cc_about_title">Про програму · Ліцензії</string>
-    <string name="cc_about_origin">Orange — змінена версія Aerial, випущеного за ліцензією MIT. Повідомлення про авторські права та текст ліцензії збережено тут повністю.</string>
+    <string name="cc_about_origin">Orange — змінена версія Film, випущеного за ліцензією MIT. Повідомлення про авторські права та текст ліцензії збережено тут повністю.</string>
     <string name="cc_about_components">Сторонні компоненти</string>
     <string name="cc_about_licence">Текст ліцензії</string>
     <string name="cc_setup_body">Якщо Orange встановлено лише з APK, він відкривається, але кнопка «Додому», вмикання та вихід зі сну досі ведуть до попереднього лаунчера.</string>

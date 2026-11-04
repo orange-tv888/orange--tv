@@ -2,8 +2,8 @@
 
 > 一页看板。每次开工先看这里，收工改这里。**只写当前状态，不写历史**——历史在 `retro/` 和 memory 日志里。
 
-- 更新时间：2026-11-04 12:00
-- 当前版本：**26.5.0**（versionCode 2650）——品牌归位与许可补齐（**代码里尚未改号，仍是 26.4.2/2642，等授权发版**）
+- 更新时间：2026-11-04 13:10
+- 当前版本：**26.5.0**（versionCode 2650）——品牌归位与许可补齐（已改号，待推送）
 - 电视：**`192.168.1.8:5555`**（旧 192.168.1.11 已失效）
 
 ## 更新通道健康
@@ -41,15 +41,26 @@
 
 清单见 `docs/release/CHECKLIST.md`：48 条，**⛔ 从 9 降到 1**（只剩 C5 那个机制约束），✅ 26 → 35。
 
-## 不动的几样（动了会出真问题）
+## 第三轮：原先打算留下的四样也改了（用户 12:13 拍板）
 
-- **签名证书 `CN=JC Aerial`**：改 = 换证书 = 所有已装设备永远无法覆盖安装。
+「4 样没有动一并动了，装机实测，没问题再推送发版。目前老设备就一台，就是我们这台电视。」于是每一处都按「改名 + 旧值兼容」做：
+
+| 原打算不动 | 现在 |
+|---|---|
+| `dream/AerialDream` | `dream/OrangeDream`。组件名变了 → 屏保要重设一次，`tools/install.sh` 每次安装都会重写 `screensaver_components`，跑一遍即恢复 |
+| `aerial_vt_home_pkg` | `orange_vt_home_pkg`。`install.sh` 写新键删旧键，`restore.sh` 两个键都读 |
+| `Account("Aerial")` | 新建账户名 `Orange`；账户按 type 查，旧名账户直接复用，不用迁移 |
+| `Aerial`/`AerialSet`/`AerialStream`/`AerialQuality`/`AerialFormats`/`Aerials` | `Film`/`FilmSet`/`FilmStream`/`FilmQuality`/`FilmFormats`/`Films`，文件一并 `git mv`，`assets/aerials.json` → `films.json` |
+
+同时带迁移或兼容的持久化名字：prefs `aerial_set`→`orange_set`（整个旧文件逐键复制）、prefs `aerial`→`orange`（亮度，读旧写新）、键 `aerial_quality`→`film_quality`（先新后旧）、PIN 盐（两个盐都试，已设 PIN 的电视不会被锁在外面）、缓存目录与日志/更新临时文件名（可直接重建）。
+
+现在全仓 `grep -ri aerial` 只剩三种：英文普通名词「航拍」（`aerial films`、资源名 `ss_aerial`）、音效枚举 key `"aerial"`、以及迁移代码里写明的旧名字（不写就迁不动）。
+
+## 仍然不动的一样（动了会出真问题）
+
+- **签名证书 `CN=JC Aerial`**：改 = 换证书 = 所有已装设备永远无法覆盖安装。证书装完不可见，不构成展示性使用。
 - **上游 issue 链接**（`pengchujin/aerial-tv/issues/NNN`，中英各 25 处）：他人讨论存档，改了全 404。
 - **`FONT-LICENSE-OFL.txt`**：Inter 字体走 OFL，有独立义务，不随品牌清理一起删。
-- **`dream/AerialDream` 类名与组件名**：已装设备的 `screensaver_components` 里存的就是这个完整组件名，改名等于把屏保清空。
-- **`aerial_vt_home_pkg`（global settings 键）**：`tools/restore.sh` 按这个名字读回原桌面，TV 上已按这个名字存着值。
-- **旧账户 `Account("Aerial")`**：新建的已改 `Orange`，但账户按 type 查，老设备上那个旧名账户会被直接复用；系统设置里那一栏仍显示旧名，不影响功能。
-- **`aerial films` / `AerialSet` / `AerialStream` 等**：航拍是普通名词，其余是领域类名，不是品牌。
 
 ## 下一步候选
 

@@ -59,14 +59,14 @@ import app.orange.tv.ui.components.diagLayer
 import app.orange.tv.ui.theme.LocalReducedMotion
 import app.orange.tv.ui.theme.Motion
 import app.orange.tv.ui.theme.Type
-import app.orange.tv.wallpaper.AerialStream
-import app.orange.tv.wallpaper.Orange
-import app.orange.tv.wallpaper.AerialSet
+import app.orange.tv.wallpaper.FilmStream
+import app.orange.tv.wallpaper.Film
+import app.orange.tv.wallpaper.FilmSet
 import androidx.compose.runtime.mutableStateListOf
-import app.orange.tv.settings.AerialSettings
-import app.orange.tv.wallpaper.AerialFormats
-import app.orange.tv.wallpaper.AerialQuality
-import app.orange.tv.wallpaper.Aerials
+import app.orange.tv.settings.OrangeSettings
+import app.orange.tv.wallpaper.FilmFormats
+import app.orange.tv.wallpaper.FilmQuality
+import app.orange.tv.wallpaper.Films
 import app.orange.tv.wallpaper.ScreensaverMode
 import app.orange.tv.wallpaper.WallpaperKind
 import app.orange.tv.wallpaper.Wallpapers
@@ -126,11 +126,11 @@ fun Screensaver(visible: Boolean, apps: List<AppEntry>, now: LocalDateTime, skip
         var videosFailed by remember { mutableStateOf(false) }
         Box(Modifier.fillMaxSize().background(Color.Black)) {
             when (Wallpapers.screensaver) {
-                ScreensaverMode.Orange -> if (aerialFailed) PhotoSaver(now, skips.steps) else AerialSaver(
+                ScreensaverMode.Orange -> if (aerialFailed) PhotoSaver(now, skips.steps) else FilmSaver(
                     now, skips.steps, onUnavailable = { aerialFailed = true }, startAt = remember {
                         // A paused wallpaper film still holds the decoder (one 4K decoder, MiTV-MFTR0).
                         LiveFilm.onHome?.letDecoderGo()
-                        AerialStart.start(context)
+                        FilmStart.start(context)
                     },
                 )
                 ScreensaverMode.Photos -> PhotoSaver(now, skips.steps, remember { Wallpapers.screensaverPicture() })
@@ -144,7 +144,7 @@ fun Screensaver(visible: Boolean, apps: List<AppEntry>, now: LocalDateTime, skip
 
 /**
  * Left / right on the remote while the screensaver is up. The host (MainActivity on Home,
- * AerialDream as the system screensaver) offers every key here first; keys not taken here wake.
+ * OrangeDream as the system screensaver) offers every key here first; keys not taken here wake.
  */
 class ScreensaverSkips {
     private val flow = MutableSharedFlow<Int>(extraBufferCapacity = 8)
@@ -214,15 +214,15 @@ fun androidx.compose.ui.graphics.drawscope.DrawScope.drawDrawingIn(image: ImageB
     }
 }
 
-/** Where a screensaver of aerials starts when it cannot carry Home's player on (AerialDream). */
-object AerialStart {
+/** Where a screensaver of aerials starts when it cannot carry Home's player on (OrangeDream). */
+object FilmStart {
     /**
      * Where a screensaver of aerials starts: the film and moment the aerial wallpaper or the last
      * screensaver left (one spot for both, whatever the wallpaper, so the two are always the same
-     * film), or the day's new film from its start (AerialSet.takeDaily).
+     * film), or the day's new film from its start (FilmSet.takeDaily).
      */
     fun start(context: android.content.Context): Pair<String, Long>? {
-        AerialSet.takeDaily(context)?.let { film ->
+        FilmSet.takeDaily(context)?.let { film ->
             DiagLog.i("today's new film ${film.id}")
             Wallpapers.leaveLiveFilm(film.id, 0L)
             return film.id to 0L
@@ -233,19 +233,19 @@ object AerialStart {
     /**
      * A few seconds before Home's screensaver: where it is to start in another format than the
      * wallpaper's (Dolby Vision chosen), that start is fetched to disk, at the moment the wallpaper's
-     * film will be at [leadMs] on (AerialStream.prepareStart). The screensaver then starts there.
+     * film will be at [leadMs] on (FilmStream.prepareStart). The screensaver then starts there.
      */
     suspend fun prepareAhead(context: android.content.Context, leadMs: Long) {
-        if (Wallpapers.screensaver != ScreensaverMode.Orange || AerialFormats.screensaverCarriesWallpaper(context)) return
-        val quality = AerialFormats.forScreensaver(context, overWallpaper = true).let { q ->
-            aerialQualityCap?.takeIf { it.ordinal < q.ordinal } ?: q
+        if (Wallpapers.screensaver != ScreensaverMode.Orange || FilmFormats.screensaverCarriesWallpaper(context)) return
+        val quality = FilmFormats.forScreensaver(context, overWallpaper = true).let { q ->
+            filmQualityCap?.takeIf { it.ordinal < q.ordinal } ?: q
         }
         val live = LiveFilm.onHome
         // A new day starts the screensaver on its new film, from the start (start()).
-        val (id, at) = if (AerialSet.due(context)) AerialSet.nextNew(context).id to 0L
+        val (id, at) = if (FilmSet.due(context)) FilmSet.nextNew(context).id to 0L
             else live?.spot()?.let { (id, at) -> id to at + if (live.moving) leadMs else 0L } ?: Wallpapers.liveSpot() ?: return
-        val film = Aerials.all(context).firstOrNull { it.id == id } ?: return
-        AerialStream.prepareStart(context, film, quality, aerialsOverHttp, at)
+        val film = Films.all(context).firstOrNull { it.id == id } ?: return
+        FilmStream.prepareStart(context, film, quality, aerialsOverHttp, at)
     }
 
     /** A screensaver of aerials of its own is up (Home's or the dream): it moves the wallpaper's spot on. */
@@ -256,7 +256,7 @@ object AerialStart {
 /**
  * The aerial wallpaper's film carried on as the screensaver, one shot from Home: the same player,
  * in the wallpaper's own format, through to the films after it. Not with Dolby Vision chosen by hand
- * (AerialFormats.screensaverCarriesWallpaper): these TVs have one 4K decoder, and the switch showed
+ * (FilmFormats.screensaverCarriesWallpaper): these TVs have one 4K decoder, and the switch showed
  * black for 1–3.5 s (Xiaomi MiTV-MFTR0), which only an owner who asked for Dolby Vision should get.
  */
 @Composable
@@ -270,8 +270,8 @@ private fun FilmCarry(film: LiveFilm, now: LocalDateTime, steps: SharedFlow<Int>
     }
     val context = LocalContext.current
     LaunchedEffect(steps) { steps.collect { film.skip(context, it) } }
-    // A new day's film comes in as the screensaver starts, over the wallpaper's film (AerialSet).
-    LaunchedEffect(Unit) { if (AerialSet.due(context)) film.skip(context, 1) }
+    // A new day's film comes in as the screensaver starts, over the wallpaper's film (FilmSet).
+    LaunchedEffect(Unit) { if (FilmSet.due(context)) film.skip(context, 1) }
     Labels(caption, now, showTime = false, shade = false)
 }
 
@@ -327,11 +327,11 @@ private fun Labels(
             )
         }
         val drift = saverDrift(now)
-        if (time > 0f && AerialSettings.screensaverClock) BasicText(
+        if (time > 0f && OrangeSettings.screensaverClock) BasicText(
             timeText(now),
             style = SaverClockStyle,
             modifier = Modifier
-                .align(if (AerialSettings.clockRight) Alignment.TopEnd else Alignment.TopStart)
+                .align(if (OrangeSettings.clockRight) Alignment.TopEnd else Alignment.TopStart)
                 .padding(top = SaverClockTop, start = SaverClockSide, end = SaverClockSide)
                 .graphicsLayer {
                     alpha = time
@@ -376,7 +376,7 @@ internal fun saverDrift(now: LocalDateTime): DpOffset {
     val target = remember(slot) { DpOffset(SaverDriftX * (rnd.nextFloat() * 2 - 1), SaverDriftY * (rnd.nextFloat() * 2 - 1)) }
     // Switched back on, the words glide out to the slot's place over the same six seconds rather
     // than jumping there.
-    val on = AerialSettings.burnIn
+    val on = OrangeSettings.burnIn
     val x by animateDpAsState(if (on) target.x else 0.dp, tween(6000, easing = Motion.EaseInOut), label = "drift-x")
     val y by animateDpAsState(if (on) target.y else 0.dp, tween(6000, easing = Motion.EaseInOut), label = "drift-y")
     return DpOffset(x, y)
@@ -402,18 +402,18 @@ private var aerialsOverHttp by mutableStateOf(Build.VERSION.SDK_INT < Build.VERS
  * The quality a decoder gave up on, for the rest of the process: the screensaver then starts one
  * step lower. A TV can list a decoder it cannot drive at that size or profile.
  */
-private var aerialQualityCap: AerialQuality? = null
+private var filmQualityCap: FilmQuality? = null
 
 /**
  * [startAt]: the aerial wallpaper's film and moment to begin with, played in the wallpaper's format
- * so it goes on as the wallpaper looked, or in Dolby Vision where chosen (AerialFormats.forScreensaver).
+ * so it goes on as the wallpaper looked, or in Dolby Vision where chosen (FilmFormats.forScreensaver).
  * Over the aerial wallpaper, the film and moment it is at are the wallpaper's to go on from
  * (Wallpapers.leaveLiveFilm): wallpaper and screensaver are one film in either format (owner,
  * 2026-10-29; until then the Dolby Vision screensaver began on any film whose start was on disk,
  * and Home came back on yet another).
  */
 @Composable
-private fun AerialSaver(
+private fun FilmSaver(
     now: LocalDateTime,
     steps: SharedFlow<Int>,
     onUnavailable: () -> Unit,
@@ -421,29 +421,29 @@ private fun AerialSaver(
 ) {
     val context = LocalContext.current
     var quality by remember {
-        val wanted = AerialFormats.forScreensaver(context, overWallpaper = startAt != null)
-        mutableStateOf(aerialQualityCap?.takeIf { it.ordinal < wanted.ordinal } ?: wanted)
+        val wanted = FilmFormats.forScreensaver(context, overWallpaper = startAt != null)
+        mutableStateOf(filmQualityCap?.takeIf { it.ordinal < wanted.ordinal } ?: wanted)
     }
     // Where it is goes to the one spot the aerial wallpaper and the next screensaver go on from
     // (Wallpapers.leaveLiveFilm), whatever the wallpaper is now: switched to the aerial one later,
     // it begins on this film.
     val overLive = remember { Wallpapers.selectedId == Wallpapers.LIVE }
     fun leave(film: String, atMs: Long, persist: Boolean) = Wallpapers.leaveLiveFilm(film, atMs, persist)
-    // The moment fetched ahead (AerialStart.prepareAhead), where it is the wallpaper's within a few
+    // The moment fetched ahead (FilmStart.prepareAhead), where it is the wallpaper's within a few
     // seconds: it plays from disk.
     @Suppress("NAME_SHADOWING")
     val startAt = remember {
         startAt?.let { (id, at) ->
-            AerialStream.prepared?.takeIf { it.film == id && it.quality == quality && kotlin.math.abs(it.atMs - at) < PREPARED_SLACK_MS }
+            FilmStream.prepared?.takeIf { it.film == id && it.quality == quality && kotlin.math.abs(it.atMs - at) < PREPARED_SLACK_MS }
                 ?.let { DiagLog.i("screensaver starts at the moment fetched ahead (${it.atMs - at} ms off)"); id to it.atMs }
                 ?: (id to at)
         }
     }
-    // The films kept (AerialSet), from the wallpaper's: the wallpaper plays them in the same order.
-    val films = remember { mutableStateListOf<Orange>().apply { addAll(AerialSet.playlist(context, startAt?.first)) } }
+    // The films kept (FilmSet), from the wallpaper's: the wallpaper plays them in the same order.
+    val films = remember { mutableStateListOf<Film>().apply { addAll(FilmSet.playlist(context, startAt?.first)) } }
     val firstAtMs = remember { startAt?.takeIf { (id, _) -> films.first().id == id }?.second ?: 0L }
-    // Its decoder starts on the film's own surface, not ExoPlayer's placeholder (AerialStream.player).
-    val player = remember { AerialStream.player(context, quality, decodeOnScreen = true) }
+    // Its decoder starts on the film's own surface, not ExoPlayer's placeholder (FilmStream.player).
+    val player = remember { FilmStream.player(context, quality, decodeOnScreen = true) }
     var index by remember { mutableIntStateOf(0) }
     var failures by remember { mutableIntStateOf(0) }
     var playing by remember { mutableStateOf(false) }
@@ -458,11 +458,11 @@ private fun AerialSaver(
     // Black veil that lifts once the film is actually moving, and drops when the viewer skips.
     // Quickly in Dolby Vision: the TV has gone black already as it changed mode, and 1.5 s more of
     // black on top read as the screensaver being slow to start (owner, 2026-10-29).
-    val liftMs = if (quality == AerialQuality.DolbyVision) DV_LIFT_MS else 1500
+    val liftMs = if (quality == FilmQuality.DolbyVision) DV_LIFT_MS else 1500
     val veil by animateFloatAsState(if (playing) 0f else 1f, tween(if (playing) liftMs else 400), label = "veil")
 
     fun load(at: Int, fromMs: Long = 0L) {
-        player.setMediaItems(films.map { AerialStream.mediaItem(it, quality, aerialsOverHttp) }, at, fromMs)
+        player.setMediaItems(films.map { FilmStream.mediaItem(it, quality, aerialsOverHttp) }, at, fromMs)
         player.prepare()
         player.playWhenReady = true
     }
@@ -474,7 +474,7 @@ private fun AerialSaver(
         if (player.playbackState == Player.STATE_IDLE) player.prepare()
     }
 
-    /** The viewer's left and right: back to a film kept, or a new one (AerialSet.addNew). */
+    /** The viewer's left and right: back to a film kept, or a new one (FilmSet.addNew). */
     fun skip(step: Int) {
         if (step < 0) {
             playing = false
@@ -482,10 +482,10 @@ private fun AerialSaver(
             if (player.playbackState == Player.STATE_IDLE) player.prepare()
             return
         }
-        val new = AerialSet.addNew(context)
+        val new = FilmSet.addNew(context)
         val at = player.currentMediaItemIndex + 1
         films.add(at, new)
-        player.addMediaItem(at, AerialStream.mediaItem(new, quality, aerialsOverHttp))
+        player.addMediaItem(at, FilmStream.mediaItem(new, quality, aerialsOverHttp))
         playing = false
         player.seekTo(at, 0L)
         if (player.playbackState == Player.STATE_IDLE) player.prepare()
@@ -513,7 +513,7 @@ private fun AerialSaver(
             }
 
             override fun onPlayerError(error: PlaybackException) {
-                DiagLog.i("aerial film failed (${error.errorCodeName}): ${player.currentMediaItem?.localConfiguration?.uri}")
+                DiagLog.i("film failed (${error.errorCodeName}): ${player.currentMediaItem?.localConfiguration?.uri}")
                 playing = false
                 // Before anything has shown, the decoder may still be held by Home's wallpaper film,
                 // which is let go as Home goes behind the dream (TCL MT5879): once more at this
@@ -526,9 +526,9 @@ private fun AerialSaver(
                     return
                 }
                 // The decoder could not play this quality: the same film one step lower.
-                if (quality != AerialQuality.Hd && error.errorCode in DECODER_ERRORS) {
-                    aerialQualityCap = AerialFormats.lower(quality)
-                    quality = AerialFormats.lower(quality)
+                if (quality != FilmQuality.Hd && error.errorCode in DECODER_ERRORS) {
+                    filmQualityCap = FilmFormats.lower(quality)
+                    quality = FilmFormats.lower(quality)
                     load(player.currentMediaItemIndex)
                     attempt++
                     return
@@ -548,9 +548,9 @@ private fun AerialSaver(
         }
         player.addListener(listener)
         load(0, firstAtMs)
-        AerialStart.running = true
+        FilmStart.running = true
         onDispose {
-            AerialStart.running = false
+            FilmStart.running = false
             if (shownAny) player.currentMediaItem?.mediaId?.let { leave(it, player.currentPosition, persist = true) }
             handler.removeCallbacksAndMessages(null)
             player.removeListener(listener)
@@ -595,8 +595,8 @@ private fun AerialSaver(
     // And the index of this film in the wallpaper's format, where that is another: Home goes on
     // from this moment with one request to Apple.
     LaunchedEffect(playing, index) {
-        val home = AerialFormats.forWallpaper(context)
-        if (playing && overLive && home != quality) AerialStream.prepareSeek(context, film, home, aerialsOverHttp)
+        val home = FilmFormats.forWallpaper(context)
+        if (playing && overLive && home != quality) FilmStream.prepareSeek(context, film, home, aerialsOverHttp)
     }
 
     // A picture wallpaper is not carried into the aerial screensaver: the two cannot blend (another
@@ -705,7 +705,7 @@ private fun PhotoSaver(
  */
 @Composable
 private fun ClockSaver(apps: List<AppEntry>, now: LocalDateTime) {
-    val burnIn = AerialSettings.burnIn
+    val burnIn = OrangeSettings.burnIn
     val minute = now.withSecond(0).withNano(0)
     val scene = remember(minute, apps.size, Wallpapers.backdrop, burnIn) {
         val rnd = Random(minute.hashCode())

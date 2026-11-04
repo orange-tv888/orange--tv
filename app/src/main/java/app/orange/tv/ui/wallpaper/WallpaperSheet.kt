@@ -75,7 +75,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import app.orange.tv.R
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.settings.FocusStyle
 import app.orange.tv.settings.UiSounds
 import app.orange.tv.settings.Effects
@@ -90,10 +90,10 @@ import app.orange.tv.ui.theme.Motion
 import app.orange.tv.ui.theme.Palette
 import app.orange.tv.ui.theme.Type
 import app.orange.tv.wallpaper.PhoneServer
-import app.orange.tv.wallpaper.AerialFormats
-import app.orange.tv.wallpaper.AerialQuality
-import app.orange.tv.wallpaper.AerialSet
-import app.orange.tv.wallpaper.AerialStream
+import app.orange.tv.wallpaper.FilmFormats
+import app.orange.tv.wallpaper.FilmQuality
+import app.orange.tv.wallpaper.FilmSet
+import app.orange.tv.wallpaper.FilmStream
 import app.orange.tv.wallpaper.ScreensaverMode
 import app.orange.tv.system.SystemScreensaver
 import app.orange.tv.wallpaper.Wallpaper
@@ -187,7 +187,7 @@ fun WallpaperSheet(
                     Choices(
                         R.string.st_play, stringResource(R.string.st_play_hint), note,
                         listOf(false to R.string.st_play_still, true to R.string.st_play_always),
-                        AerialSettings.wallpaperAlwaysMoves, AerialSettings::chooseWallpaperAlwaysMoves, first = true,
+                        OrangeSettings.wallpaperAlwaysMoves, OrangeSettings::chooseWallpaperAlwaysMoves, first = true,
                     )
                 }
 
@@ -198,28 +198,28 @@ fun WallpaperSheet(
                     Choices(
                         R.string.st_layout, stringResource(R.string.st_home_layout_hint), note,
                         listOf(true to R.string.st_home_one_row, false to R.string.st_home_standard),
-                        AerialSettings.oneRowHome, AerialSettings::chooseOneRowHome, first = true,
+                        OrangeSettings.oneRowHome, OrangeSettings::chooseOneRowHome, first = true,
                     )
                     // Two rows show the second row whole; only one row has a peek to hide.
-                    if (AerialSettings.oneRowHome) Choices(
+                    if (OrangeSettings.oneRowHome) Choices(
                         R.string.st_peek, stringResource(R.string.st_peek_hint), note,
                         listOf(true to R.string.st_peek_show, false to R.string.st_peek_hide),
-                        AerialSettings.peekNextRow, AerialSettings::choosePeekNextRow,
+                        OrangeSettings.peekNextRow, OrangeSettings::choosePeekNextRow,
                     )
                     Choices(
                         R.string.st_columns, stringResource(R.string.st_columns_hint), note,
-                        AerialSettings.HOME_COLUMNS.map { it to it.toString() },
-                        AerialSettings.homeColumns, AerialSettings::chooseHomeColumns,
+                        OrangeSettings.HOME_COLUMNS.map { it to it.toString() },
+                        OrangeSettings.homeColumns, OrangeSettings::chooseHomeColumns,
                     )
                     Choices(
                         R.string.st_plate, stringResource(R.string.st_plate_hint), note,
                         listOf(true to R.string.st_plate_glass, false to R.string.st_plate_none),
-                        AerialSettings.homePlate, AerialSettings::chooseHomePlate,
+                        OrangeSettings.homePlate, OrangeSettings::chooseHomePlate,
                     )
                     Choices(
                         R.string.st_names, stringResource(R.string.st_names_hint), note,
                         listOf(false to R.string.st_names_focused, true to R.string.st_names_all),
-                        AerialSettings.showAllNames, AerialSettings::chooseShowAllNames,
+                        OrangeSettings.showAllNames, OrangeSettings::chooseShowAllNames,
                     )
                     // Apps taken off Home are kept with the rest of how Home looks.
                     SettingRow(R.string.st_hidden_apps, stringResource(R.string.st_hidden_apps_hint), note) {
@@ -235,44 +235,44 @@ fun WallpaperSheet(
                     Choices(
                         R.string.st_clock, stringResource(R.string.st_clock_hint), note,
                         listOf(false to R.string.st_clock_left, true to R.string.st_clock_right),
-                        AerialSettings.clockRight, AerialSettings::chooseClockRight, first = true,
+                        OrangeSettings.clockRight, OrangeSettings::chooseClockRight, first = true,
                     )
                     Choices(
                         R.string.st_clock_size, stringResource(R.string.st_clock_size_hint), note,
                         listOf(false to R.string.st_clock_small, true to R.string.st_clock_large),
-                        AerialSettings.largeClock, AerialSettings::chooseLargeClock,
+                        OrangeSettings.largeClock, OrangeSettings::chooseLargeClock,
                     )
                     Choices(
                         R.string.wp_weather, null, note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
-                        AerialSettings.showWeather, AerialSettings::chooseShowWeather,
+                        OrangeSettings.showWeather, OrangeSettings::chooseShowWeather,
                     )
                 }
                 Spacer(Modifier.height(10.dp))
                 Group { note ->
                     Choices(
                         R.string.st_focus_style,
-                        stringResource(if (AerialSettings.focusStyle == FocusStyle.HighContrast) R.string.st_focus_high_hint else R.string.st_focus_standard_hint),
+                        stringResource(if (OrangeSettings.focusStyle == FocusStyle.HighContrast) R.string.st_focus_high_hint else R.string.st_focus_standard_hint),
                         note,
                         listOf(FocusStyle.HighContrast to R.string.st_focus_high, FocusStyle.Standard to R.string.st_focus_standard),
-                        AerialSettings.focusStyle, AerialSettings::chooseFocusStyle, first = true,
+                        OrangeSettings.focusStyle, OrangeSettings::chooseFocusStyle, first = true,
                     )
                     Choices(
                         R.string.st_sounds,
-                        stringResource(if (AerialSettings.uiSounds == UiSounds.Tv) R.string.st_sounds_tv_hint else R.string.st_sounds_hint),
+                        stringResource(if (OrangeSettings.uiSounds == UiSounds.Tv) R.string.st_sounds_tv_hint else R.string.st_sounds_hint),
                         note,
                         listOf(UiSounds.Tv to R.string.st_sounds_tv, UiSounds.Orange to R.string.st_sounds_aerial, UiSounds.Off to R.string.st_off),
-                        AerialSettings.uiSounds, { AerialSettings.chooseUiSounds(it); Sounds.prepare() },
+                        OrangeSettings.uiSounds, { OrangeSettings.chooseUiSounds(it); Sounds.prepare() },
                     )
                     Choices(
                         R.string.st_effects,
                         stringResource(
-                            if (AerialSettings.effects == Effects.Auto && AerialSettings.lowEnd) R.string.st_effects_auto_lite_hint
+                            if (OrangeSettings.effects == Effects.Auto && OrangeSettings.lowEnd) R.string.st_effects_auto_lite_hint
                             else R.string.st_effects_hint,
                         ),
                         note,
                         listOf(Effects.Auto to R.string.st_effects_auto, Effects.Full to R.string.st_effects_full, Effects.Lite to R.string.st_effects_lite),
-                        AerialSettings.effects, AerialSettings::chooseEffects,
+                        OrangeSettings.effects, OrangeSettings::chooseEffects,
                     )
                 }
 
@@ -285,47 +285,47 @@ fun WallpaperSheet(
                             Wallpapers.screensaver == ScreensaverMode.Videos -> stringResource(R.string.ss_videos_hint)
                             Wallpapers.screensaver == ScreensaverMode.System -> stringResource(R.string.ss_system_hint)
                             Wallpapers.screensaverFollows -> stringResource(R.string.ss_follow_hint)
-                            AerialSettings.backStartsScreensaver -> stringResource(R.string.ss_back_hint)
+                            OrangeSettings.backStartsScreensaver -> stringResource(R.string.ss_back_hint)
                             else -> null
                         },
                         note, first = true,
                     ) { ScreensaverChoice(onStartScreensaver) }
                     // Only the qualities this TV can play; a 1080p-only TV has nothing to choose.
-                    val qualities = remember { AerialFormats.supported(context) }
+                    val qualities = remember { FilmFormats.supported(context) }
                     if (qualities.size > 1) {
-                        // The films kept on the TV (AerialSet, AerialStream): how many, how much
+                        // The films kept on the TV (FilmSet, FilmStream): how many, how much
                         // space at most, and how they change. In place of the quality's own note,
                         // as a note shows two lines at most.
                         val keeps = stringResource(
                             R.string.ss_aerial_keeps,
-                            remember { android.text.format.Formatter.formatShortFileSize(context, AerialStream.keepLimit(context)) },
-                            AerialSet.MAX,
+                            remember { android.text.format.Formatter.formatShortFileSize(context, FilmStream.keepLimit(context)) },
+                            FilmSet.MAX,
                         )
                         Choices(
                             R.string.ss_quality, keeps, note,
-                            listOf(AerialQuality.Auto to R.string.ss_quality_auto, AerialQuality.Hd to R.string.ss_quality_hd) +
-                                listOf(AerialQuality.Uhd to R.string.ss_quality_uhd, AerialQuality.DolbyVision to R.string.ss_quality_dv)
+                            listOf(FilmQuality.Auto to R.string.ss_quality_auto, FilmQuality.Hd to R.string.ss_quality_hd) +
+                                listOf(FilmQuality.Uhd to R.string.ss_quality_uhd, FilmQuality.DolbyVision to R.string.ss_quality_dv)
                                     .filter { it.first in qualities },
-                            AerialSettings.aerialQuality, AerialSettings::chooseAerialQuality,
+                            OrangeSettings.filmQuality, OrangeSettings::chooseFilmQuality,
                         )
                     }
                     // The clock screensaver is its clock, and the others show none.
                     if (Wallpapers.screensaver == ScreensaverMode.Orange || Wallpapers.screensaver == ScreensaverMode.Photos) Choices(
                         R.string.ss_show_time, stringResource(R.string.ss_show_time_hint), note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
-                        AerialSettings.screensaverClock, AerialSettings::chooseScreensaverClock,
+                        OrangeSettings.screensaverClock, OrangeSettings::chooseScreensaverClock,
                     )
                     // The words and the clocks move now and then so nothing sits on the same
                     // pixels all night (issue #416). Off keeps the picture completely still, which
                     // an OLED left for hours may remember, so the note says so.
                     if (Wallpapers.screensaver != ScreensaverMode.Videos && Wallpapers.screensaver != ScreensaverMode.System) Choices(
                         R.string.ss_burn_in,
-                        stringResource(if (AerialSettings.burnIn) R.string.ss_burn_in_hint else R.string.ss_burn_in_hint_off),
+                        stringResource(if (OrangeSettings.burnIn) R.string.ss_burn_in_hint else R.string.ss_burn_in_hint_off),
                         note,
                         listOf(true to R.string.st_on, false to R.string.st_off),
-                        AerialSettings.burnIn, AerialSettings::chooseBurnIn,
+                        OrangeSettings.burnIn, OrangeSettings::chooseBurnIn,
                     )
-                    // The firmware's screensaver starts on the firmware's timer: Orange's delay
+                    // The firmware's screensaver starts on the firmware's timer: Film's delay
                     // did nothing there, and Xiaomi's 1 minute came before the 5 chosen (issue #675).
                     if (Wallpapers.screensaver == ScreensaverMode.System) SettingRow(R.string.ss_delay, null, note) {
                         val delay = remember { SystemScreensaver.firmwareDelayMs(context) }
@@ -340,15 +340,15 @@ fun WallpaperSheet(
                         )
                     } else Choices(
                         R.string.ss_delay, null, note,
-                        AerialSettings.screensaverChoices.map {
-                            it to if (it == AerialSettings.NEVER) stringResource(R.string.ss_never) else stringResource(R.string.ss_minutes, it)
+                        OrangeSettings.screensaverChoices.map {
+                            it to if (it == OrangeSettings.NEVER) stringResource(R.string.ss_never) else stringResource(R.string.ss_minutes, it)
                         },
-                        AerialSettings.screensaverMinutes, AerialSettings::chooseScreensaverMinutes,
+                        OrangeSettings.screensaverMinutes, OrangeSettings::chooseScreensaverMinutes,
                     )
                     Choices(
                         R.string.ss_back, stringResource(R.string.ss_back_choice_hint), note,
                         listOf(true to R.string.ss_back_on, false to R.string.ss_back_off),
-                        AerialSettings.backStartsScreensaver, AerialSettings::chooseBackStartsScreensaver,
+                        OrangeSettings.backStartsScreensaver, OrangeSettings::chooseBackStartsScreensaver,
                     )
                 }
 
@@ -651,8 +651,8 @@ private fun <T> Choices(
 private fun PinChoice(onPin: (on: Boolean) -> Unit, onFocused: () -> Unit) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         listOf(false to R.string.st_pin_off, true to R.string.st_pin_on).forEach { (on, label) ->
-            Chip(stringResource(label), on = AerialSettings.pinSet == on, onFocused = onFocused) {
-                if (AerialSettings.pinSet != on) onPin(on)
+            Chip(stringResource(label), on = OrangeSettings.pinSet == on, onFocused = onFocused) {
+                if (OrangeSettings.pinSet != on) onPin(on)
             }
         }
     }

@@ -58,7 +58,7 @@ import app.orange.tv.guard.GuardSetup
 import app.orange.tv.guard.HomeGuardService
 import app.orange.tv.ui.home.HomeScreen
 import app.orange.tv.ui.home.BootIntro
-import app.orange.tv.ui.home.AerialStart
+import app.orange.tv.ui.home.FilmStart
 import app.orange.tv.ui.home.LiveFilm
 import app.orange.tv.ui.home.asFocusedTile
 import app.orange.tv.ui.theme.LocalReducedMotion
@@ -66,13 +66,13 @@ import app.orange.tv.ui.home.TileFaces
 import app.orange.tv.ui.theme.FontWarmup
 import app.orange.tv.ui.theme.canvasDensity
 import app.orange.tv.ui.components.UhdCanvas
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.wallpaper.PhoneServer
 import app.orange.tv.wallpaper.Wallpapers
 import app.orange.tv.system.BootOpen
 import app.orange.tv.system.DiagLog
 import app.orange.tv.system.FrameStats
-import app.orange.tv.wallpaper.AerialFormats
+import app.orange.tv.wallpaper.FilmFormats
 import app.orange.tv.wallpaper.ScreensaverMode
 import app.orange.tv.system.SystemScreensaver
 import app.orange.tv.system.Diagnostics
@@ -230,7 +230,7 @@ class MainActivity : ComponentActivity() {
         IconLibrary.init(this)
         SourceLooks.init(this)
         AppNames.init(this)
-        AerialSettings.init(this)
+        OrangeSettings.init(this)
         // After the settings: the artwork's size follows the number of apps a row.
         TileArtFactory.useCanvasDensity(canvasDensity(resources.displayMetrics) * uhd)
         Sounds.init(this)
@@ -368,7 +368,7 @@ class MainActivity : ComponentActivity() {
         if (SystemClock.elapsedRealtime() > 3 * 60 * 1000L) {
             // In the diagnostics: an app to start on that never opened at power-on (MiTV4-ANSM0,
             // Android 6.0.1, issue #1009) may be Home created later than this.
-            if (AerialSettings.bootSource != null || AerialSettings.bootApp != null) {
+            if (OrangeSettings.bootSource != null || OrangeSettings.bootApp != null) {
                 DiagLog.i("boot target: Home first created ${SystemClock.elapsedRealtime() / 1000} s after boot, too late to open it")
             }
             return false
@@ -387,8 +387,8 @@ class MainActivity : ComponentActivity() {
      */
     /** [again]: the target was opened and then covered at once (Home Guard's EXTRA_REOPEN_BOOT). */
     private fun openBootSource(reason: String, again: Boolean = false) {
-        val id = AerialSettings.bootSource
-        val pkg = AerialSettings.bootApp
+        val id = OrangeSettings.bootSource
+        val pkg = OrangeSettings.bootApp
         if (id == null && pkg == null) return
         if (!again && SystemClock.elapsedRealtime() - bootSourceOpenedAt < 15_000) return
         if (!again && !BootOpen.due(this)) {
@@ -442,7 +442,7 @@ class MainActivity : ComponentActivity() {
     private fun preferSmoothestRefreshRate() {
         if (Build.VERSION.SDK_INT < 31) return
         // Twice the frames is twice the GPU's work: Lite stays at the rate the TV chose.
-        if (AerialSettings.lite) return DiagLog.i("refresh rate left as it is (lite effects)")
+        if (OrangeSettings.lite) return DiagLog.i("refresh rate left as it is (lite effects)")
         val display = display ?: return
         val current = display.mode
         val seamless = current.alternativeRefreshRates
@@ -530,9 +530,9 @@ class MainActivity : ComponentActivity() {
     private val idleHandler = Handler(Looper.getMainLooper())
     private val showScreensaver = Runnable { if (vm.resumed) startScreensaver(asked = false) }
 
-    /** The Dolby Vision screensaver's start, fetched to disk while Home is still up (AerialStart.prepareAhead). */
+    /** The Dolby Vision screensaver's start, fetched to disk while Home is still up (FilmStart.prepareAhead). */
     private val prepareScreensaver = Runnable {
-        if (vm.resumed && !vm.screensaverVisible) lifecycleScope.launch { AerialStart.prepareAhead(this@MainActivity, SAVER_AHEAD_MS) }
+        if (vm.resumed && !vm.screensaverVisible) lifecycleScope.launch { FilmStart.prepareAhead(this@MainActivity, SAVER_AHEAD_MS) }
     }
 
     /** Home's bounce did not bring Orange back in time: the film lets its decoder go as usual. */
@@ -550,18 +550,18 @@ class MainActivity : ComponentActivity() {
      * starts nothing on the timer, and Back starts the firmware's.
      */
     private fun startScreensaver(asked: Boolean) {
-        AerialSettings.relock()
+        OrangeSettings.relock()
         if (Wallpapers.screensaver == ScreensaverMode.System) {
             if (asked && !SystemScreensaver.startFirmware(this)) DiagLog.i("no system screensaver to start")
             return
         }
-        // Aerials over the aerial wallpaper: Home carries the wallpaper's film on, the same player in
+        // Films over the aerial wallpaper: Home carries the wallpaper's film on, the same player in
         // the same format, so there is no black between them; the dream would be a new player in a
         // new window, and showed black even in 4K (TCL MT5879). Not with Dolby Vision chosen by hand,
-        // which the wallpaper does not play (AerialFormats.screensaverCarriesWallpaper).
+        // which the wallpaper does not play (FilmFormats.screensaverCarriesWallpaper).
         val carry = Wallpapers.selectedId == Wallpapers.LIVE && Wallpapers.screensaver == ScreensaverMode.Orange &&
-            AerialFormats.screensaverCarriesWallpaper(this)
-        if (!carry && !dreamFails(this) && SystemScreensaver.isAerials(this)) {
+            FilmFormats.screensaverCarriesWallpaper(this)
+        if (!carry && !dreamFails(this) && SystemScreensaver.isOrangeSaver(this)) {
             // The dream's film needs the decoder the wallpaper's holds: TCL MT5879 failed Dolby
             // Vision beside it and the dream fell back to 4K HEVC.
             LiveFilm.onHome?.letDecoderGo()
@@ -627,7 +627,7 @@ class MainActivity : ComponentActivity() {
         // taking focus (TCL MT5879: a press 18 ms after onPause, focus gone 400 ms later), and a
         // timer set then would start the screensaver over the app's video (issue #974).
         if (!vm.resumed) return
-        if (AerialSettings.screensaverMinutes != AerialSettings.NEVER) {
+        if (OrangeSettings.screensaverMinutes != OrangeSettings.NEVER) {
             val idle = idleBeforeScreensaver()
             idleHandler.postDelayed(showScreensaver, idle)
             if (idle > SAVER_AHEAD_MS) idleHandler.postDelayed(prepareScreensaver, idle - SAVER_AHEAD_MS)
@@ -658,7 +658,7 @@ class MainActivity : ComponentActivity() {
         runCatching { Settings.System.getLong(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrDefault(0L) >= 24 * 60 * 60 * 1000L
 
     private fun idleBeforeScreensaver(): Long {
-        val chosen = AerialSettings.screensaverMinutes * 60_000L
+        val chosen = OrangeSettings.screensaverMinutes * 60_000L
         // Where Orange's dream is the TV's screensaver, the TV starts it on its own after
         // screen_off_timeout (TCL MT5879: 2 minutes); Home starts its own first, so that the
         // aerial wallpaper's film can carry on (startScreensaver).
@@ -671,7 +671,7 @@ class MainActivity : ComponentActivity() {
         runCatching { Settings.System.getLong(contentResolver, "screen_saver_timeout") }.getOrNull()?.takeIf { it > 0 }
 
     private fun dreamDelay(): Long? =
-        if (SystemScreensaver.isAerials(this)) runCatching { Settings.System.getLong(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()?.takeIf { it > 0 } else null
+        if (SystemScreensaver.isOrangeSaver(this)) runCatching { Settings.System.getLong(contentResolver, Settings.System.SCREEN_OFF_TIMEOUT) }.getOrNull()?.takeIf { it > 0 } else null
 
     /**
      * Where the TV's own delay for Orange's dream is shorter than the one chosen in Personalize,
@@ -684,7 +684,7 @@ class MainActivity : ComponentActivity() {
     private fun holdsOffTheDream(): Boolean {
         if (firmwareScreensaverDelay() != null) return false
         val dream = dreamDelay() ?: return false
-        return AerialSettings.screensaverMinutes * 60_000L > dream - 15_000L
+        return OrangeSettings.screensaverMinutes * 60_000L > dream - 15_000L
     }
 
     private fun hideScreensaver() {
@@ -849,7 +849,7 @@ class MainActivity : ComponentActivity() {
         }
         restartIdleTimer()
         GuardSetup.setHomeInFront(this, true)
-        HomeGuardService.onAerialResumed()
+        HomeGuardService.onOrangeResumed()
         Updates.onHomeResumed()
         vm.refreshSystem()
         if (!resumedInProcess) {
@@ -882,7 +882,7 @@ class MainActivity : ComponentActivity() {
         Updates.onHomePaused()
         DiagLog.i("onPause")
         GuardSetup.setHomeInFront(this, false)
-        if (HomeGuardService.onAerialPaused()) {
+        if (HomeGuardService.onOrangePaused()) {
             // Only Home's bounce: the film plays on, unless Orange is not back soon after all
             // (Home pressed again and again, the recent apps opened).
             vm.homeBounce = true
@@ -906,7 +906,7 @@ class MainActivity : ComponentActivity() {
         idleHandler.removeCallbacks(endHomeBounce)
         vm.homeBounce = false
         // An app, the screensaver or standby in front: the PIN is asked again, as in Lite (#718).
-        AerialSettings.relock()
+        OrangeSettings.relock()
         unregisterReceiver(packageReceiver)
         unregisterReceiver(volumeReceiver)
         unregisterReceiver(dayReceiver)
@@ -916,7 +916,7 @@ class MainActivity : ComponentActivity() {
     /** Opens an app, growing it out of its tile. */
     private fun launch(app: AppEntry, bounds: Rect?) {
         // The TV's settings app behind the parental PIN as well, not only Control Center's button.
-        if (AerialSettings.locked && SystemProbe.isSettingsApp(this, app.packageName)) {
+        if (OrangeSettings.locked && SystemProbe.isSettingsApp(this, app.packageName)) {
             vm.whenUnlocked { launch(app, bounds) }
             return
         }
@@ -1077,17 +1077,17 @@ class MainActivity : ComponentActivity() {
         const val WAKE_QUIET_MS = 400L
 
         /**
-         * When the system's screensaver (AerialDream) last ended on a key, in uptime: a second press
+         * When the system's screensaver (OrangeDream) last ended on a key, in uptime: a second press
          * the remote sent with it reaches Home, which takes it as waking too.
          */
         @Volatile
         var dreamWokeAt = 0L
 
         /**
-         * The key that woke AerialDream, until its lift. The rest of that press (its repeats and its
+         * The key that woke OrangeDream, until its lift. The rest of that press (its repeats and its
          * lift) comes to Home once the dream is gone; on TCL MT5879 the dream's teardown can hold
          * the lift back long enough for Android to repeat the key, and one Down moved focus several
-         * rows. Set by AerialDream.
+         * rows. Set by OrangeDream.
          */
         @Volatile var dreamWokeKey = -1
     }

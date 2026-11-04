@@ -17,7 +17,7 @@ import androidx.core.content.getSystemService
 import app.orange.tv.BuildConfig
 import app.orange.tv.guard.GuardSetup
 import app.orange.tv.guard.HomeGuardService
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.update.Updates
 import app.orange.tv.wallpaper.PhoneServer
 import app.orange.tv.wallpaper.Wallpapers
@@ -48,7 +48,7 @@ object Diagnostics {
         "com.dangbeimarket",
     )
 
-    // AerialDiag is in DiagLog already; AerialWeather names the city.
+    // OrangeDiag is in DiagLog already; OrangeWeather names the city.
     private val LOG_TAGS = listOf("OrangeGuard", "OrangeUpdates", "OrangeStream", "OrangeWallpaper", "OrangeKonkaSources", "AndroidRuntime")
 
     /**
@@ -114,14 +114,14 @@ object Diagnostics {
         appendLine("ADB         adb_enabled=${global(context, Settings.Global.ADB_ENABLED)} keep_adb=${GuardSetup.keepAdb(context)} guard_off_in_standby=${GuardSetup.offInStandby(context)}")
         appendLine("Screensaver enabled=${secure(context, "screensaver_enabled")} components=${secure(context, "screensaver_components")} Orange's=${Wallpapers.screensaver}")
         appendLine("Sounds      sound_effects_enabled=${system(context, Settings.System.SOUND_EFFECTS_ENABLED)}")
-        appendLine("Effects     ${AerialSettings.effects.key}, lite=${AerialSettings.lite}; ${DeviceClass.describe(context)}")
+        appendLine("Effects     ${OrangeSettings.effects.key}, lite=${OrangeSettings.lite}; ${DeviceClass.describe(context)}")
         appendLine("Compiled    ${compiled(context)}; self compile ${app.orange.tv.update.SelfCompile.diagnostics(context)}")
         appendLine("Frames      ${FrameStats.summary()}")
-        appendLine("Settings    focus=${AerialSettings.focusStyle.key} one_row=${AerialSettings.oneRowHome} columns=${AerialSettings.homeColumns} peek=${AerialSettings.peekNextRow} names=${AerialSettings.showAllNames} boot_source=${AerialSettings.bootSource != null} boot_app=${AerialSettings.bootApp}")
-        runCatching { app.orange.tv.wallpaper.AerialStream.usage(context) }.getOrNull()?.let { (used, limit) ->
-            appendLine("Aerials     quality=${AerialSettings.aerialQuality.key} films=${app.orange.tv.wallpaper.AerialSet.films(context).joinToString(",") { it.id.take(8) }} cache=${used / 1_048_576}/${limit / 1_048_576} MB")
+        appendLine("Settings    focus=${OrangeSettings.focusStyle.key} one_row=${OrangeSettings.oneRowHome} columns=${OrangeSettings.homeColumns} peek=${OrangeSettings.peekNextRow} names=${OrangeSettings.showAllNames} boot_source=${OrangeSettings.bootSource != null} boot_app=${OrangeSettings.bootApp}")
+        runCatching { app.orange.tv.wallpaper.FilmStream.usage(context) }.getOrNull()?.let { (used, limit) ->
+            appendLine("Films     quality=${OrangeSettings.filmQuality.key} films=${app.orange.tv.wallpaper.FilmSet.films(context).joinToString(",") { it.id.take(8) }} cache=${used / 1_048_576}/${limit / 1_048_576} MB")
         }
-        appendLine("            wallpaper=${app.orange.tv.wallpaper.Wallpapers.selectedId.substringBefore('/')} always_moves=${AerialSettings.wallpaperAlwaysMoves} quality=${AerialSettings.aerialQuality.key} weather=${AerialSettings.showWeather} saver_clock=${AerialSettings.screensaverClock}")
+        appendLine("            wallpaper=${app.orange.tv.wallpaper.Wallpapers.selectedId.substringBefore('/')} always_moves=${OrangeSettings.wallpaperAlwaysMoves} quality=${OrangeSettings.filmQuality.key} weather=${OrangeSettings.showWeather} saver_clock=${OrangeSettings.screensaverClock}")
         appendLine("```")
 
         appendLine()

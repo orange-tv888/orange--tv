@@ -4,7 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import app.orange.tv.apps.TileSheet
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.settings.Effects
 import app.orange.tv.system.DeviceProfile
 import app.orange.tv.system.DiagLog
@@ -13,7 +13,7 @@ import app.orange.tv.system.SystemProbe
 import app.orange.tv.update.Updates
 import app.orange.tv.ui.components.DiagLayers
 import app.orange.tv.ui.components.UhdCanvas
-import app.orange.tv.wallpaper.AerialQuality
+import app.orange.tv.wallpaper.FilmQuality
 import app.orange.tv.wallpaper.ScreensaverMode
 import app.orange.tv.wallpaper.Wallpapers
 import kotlinx.coroutines.launch
@@ -92,26 +92,26 @@ class ConfigReceiver : BroadcastReceiver() {
             return
         }
         if (intent.getBooleanExtra("clear_pin", false)) {
-            AerialSettings.init(context)
-            AerialSettings.choosePin(null)
+            OrangeSettings.init(context)
+            OrangeSettings.choosePin(null)
         }
         val layout = mapOf<String, (Boolean) -> Unit>(
-            "large_clock" to AerialSettings::chooseLargeClock,
-            "clock_right" to AerialSettings::chooseClockRight,
-            "one_row_home" to AerialSettings::chooseOneRowHome,
-            "peek_next_row" to AerialSettings::choosePeekNextRow,
-            "home_plate" to AerialSettings::chooseHomePlate,
-            "show_all_names" to AerialSettings::chooseShowAllNames,
-            "burn_in" to AerialSettings::chooseBurnIn,
+            "large_clock" to OrangeSettings::chooseLargeClock,
+            "clock_right" to OrangeSettings::chooseClockRight,
+            "one_row_home" to OrangeSettings::chooseOneRowHome,
+            "peek_next_row" to OrangeSettings::choosePeekNextRow,
+            "home_plate" to OrangeSettings::chooseHomePlate,
+            "show_all_names" to OrangeSettings::chooseShowAllNames,
+            "burn_in" to OrangeSettings::chooseBurnIn,
         ).filterKeys { intent.hasExtra(it) }
         if (layout.isNotEmpty()) {
-            AerialSettings.init(context)
+            OrangeSettings.init(context)
             layout.forEach { (key, choose) -> choose(intent.getBooleanExtra(key, false)) }
         }
-        if (intent.hasExtra("preview_apps")) AerialSettings.previewApps = intent.getIntExtra("preview_apps", 0).coerceAtLeast(0)
+        if (intent.hasExtra("preview_apps")) OrangeSettings.previewApps = intent.getIntExtra("preview_apps", 0).coerceAtLeast(0)
         if (intent.hasExtra("home_columns")) {
-            AerialSettings.init(context)
-            AerialSettings.chooseHomeColumns(intent.getIntExtra("home_columns", 5))
+            OrangeSettings.init(context)
+            OrangeSettings.chooseHomeColumns(intent.getIntExtra("home_columns", 5))
         }
         // ... --ez diag true / --ez mode_switch false / --ez soft_layer true   (see DiagLog;
         //                                 the last two apply the next time Home starts)
@@ -157,12 +157,12 @@ class ConfigReceiver : BroadcastReceiver() {
         // ... --es effects auto|full|lite / --es aerial_quality auto|1080p|4k|dolby_vision
         //                                 (as in Personalize; for comparing frame times of each)
         intent.getStringExtra("effects")?.let { key ->
-            AerialSettings.init(context)
-            Effects.entries.firstOrNull { it.key == key }?.let(AerialSettings::chooseEffects)
+            OrangeSettings.init(context)
+            Effects.entries.firstOrNull { it.key == key }?.let(OrangeSettings::chooseEffects)
         }
         intent.getStringExtra("aerial_quality")?.let { key ->
-            AerialSettings.init(context)
-            AerialQuality.entries.firstOrNull { it.key == key }?.let(AerialSettings::chooseAerialQuality)
+            OrangeSettings.init(context)
+            FilmQuality.entries.firstOrNull { it.key == key }?.let(OrangeSettings::chooseFilmQuality)
         }
         // Opt-in for an input ("*" = any recognized Apple TV input). Empty input disables.
         // Optional player and current-input setting key allow testing other firmware routes.
@@ -178,7 +178,7 @@ class ConfigReceiver : BroadcastReceiver() {
         // ... --es weather_city 潮州   (the phone page's weather field; "" goes back to the city the
         //                                 network names. Looking a name up takes a second request, so
         //                                 the reply says the lookup started, not how it ended: see
-        //                                 logcat's AerialConfig line.)
+        //                                 logcat's OrangeConfig line.)
         intent.getStringExtra("weather_city")?.let { name ->
             if (name.isBlank()) {
                 app.orange.tv.weather.Weather.useNetworkLocation()

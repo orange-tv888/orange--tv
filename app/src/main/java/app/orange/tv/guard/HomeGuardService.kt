@@ -31,8 +31,8 @@ import android.view.accessibility.AccessibilityManager
 import androidx.core.content.ContextCompat
 import androidx.core.content.getSystemService
 import app.orange.tv.MainActivity
-import app.orange.tv.dream.AerialDream
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.dream.OrangeDream
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.BootOpen
 import app.orange.tv.system.DeviceProfile
 import app.orange.tv.system.DiagLog
@@ -97,7 +97,7 @@ class HomeGuardService : AccessibilityService() {
     // On a wake, also ask usage stats whether a stock home silently covered Orange: Tencent's Aurora
     // box 4 Pro (A4111, Android 11) puts com.ktcp.launcher in front while it goes to sleep, with no
     // window change, so the last window seen was still Orange's and the launcher stayed after the
-    // wake (issue #928, the reporter's log). coveredAerial needs Orange's Home not resumed and a
+    // wake (issue #928, the reporter's log). coveredOrange needs Orange's Home not resumed and a
     // stock home as the newest move to the front.
     private val takeOver = Runnable { takeOverIfStockHomeInFront(takeOverReason, takeOverOnWake, coveredSilently = takeOverOnWake) }
 
@@ -169,7 +169,7 @@ class HomeGuardService : AccessibilityService() {
             }
             Log.i(TAG, "stock launcher $pkg in front by usage stats; bringing Orange back")
             val woke = SystemClock.elapsedRealtime() - screenOnAt < WAKE_WINDOW_MS
-            if (!woke && homeKeyReachesAerial && isDefaultHome() && pressHomeForStock()) {
+            if (!woke && homeKeyReachesOrange && isDefaultHome() && pressHomeForStock()) {
                 broughtBackAt = SystemClock.uptimeMillis()
                 handler.removeCallbacks(homeKeyCheck)
                 handler.postDelayed(homeKeyCheck, HOME_KEY_CHECK_MS)
@@ -188,11 +188,11 @@ class HomeGuardService : AccessibilityService() {
      * answers Home with its own launcher, as Panasonic DX01C does), the guard starts Orange as
      * before, and from then on in this process.
      */
-    private var homeKeyReachesAerial = true
+    private var homeKeyReachesOrange = true
     private val homeKeyCheck = Runnable {
         if (aerialResumed) return@Runnable
         Log.i(TAG, "a Home press did not bring Orange back; starting it instead from now on")
-        homeKeyReachesAerial = false
+        homeKeyReachesOrange = false
         goHome()
     }
 
@@ -256,7 +256,7 @@ class HomeGuardService : AccessibilityService() {
      * paused, never shown). Only a stock home counts, so Orange's own screensaver or settings stay;
      * only at the boot rechecks, when Orange is not in the middle of opening.
      */
-    private fun coveredAerial(window: Pair<String, String>): Pair<String, String>? {
+    private fun coveredOrange(window: Pair<String, String>): Pair<String, String>? {
         if (window.first != packageName || aerialResumed || !usageStatsAllowed(this)) return null
         val (front, _) = foreground(UNKNOWN_FRONT_LOOKBACK_MS) ?: return null
         if (front.second !in stockHomes[front.first].orEmpty()) return null
@@ -370,7 +370,7 @@ class HomeGuardService : AccessibilityService() {
             // On disk as well: in the boot window, answering Home here can end with accessibility
             // restarted (frontAfterHome), and the guard that starts then has to know of it too.
             if (SystemClock.elapsedRealtime() < BOOT_WINDOW_MS) BootOpen.noteHomeKey(this@HomeGuardService)
-            if (backOnPause) noteHomeInAerial()
+            if (backOnPause) noteHomeInOrange()
             val front = lastWindow?.first
             if (front != null && front !in stockHomes) {
                 windowsAtHome = windowsSeen
@@ -643,8 +643,8 @@ class HomeGuardService : AccessibilityService() {
     }
 
     private fun hasBootSource(): Boolean = runCatching {
-        AerialSettings.init(this)
-        AerialSettings.hasBootTarget
+        OrangeSettings.init(this)
+        OrangeSettings.hasBootTarget
     }.getOrDefault(false)
 
     /**
@@ -687,7 +687,7 @@ class HomeGuardService : AccessibilityService() {
         // the boot rechecks, on firmwares that raise no window change for the app the viewer
         // opened (Skyworth 9S52_Q4A, Android 6, issue #489). Orange itself says nothing about what
         // it uncovered when it died, so it stays unknown.
-        val seen = lastWindow?.takeIf { it !in fallbackHomes }?.let { (if (coveredSilently) coveredAerial(it) else null) ?: it }
+        val seen = lastWindow?.takeIf { it !in fallbackHomes }?.let { (if (coveredSilently) coveredOrange(it) else null) ?: it }
         // The app in front was backed out of and nothing came up: a black screen with no window on
         // LeTV X4-50 (eUI, Android 6.0, issue #1023). That is the stock launcher's place.
         val empty = seen == null && nothingInFrontByUsage()
@@ -918,7 +918,7 @@ class HomeGuardService : AccessibilityService() {
                 Log.i(TAG, "Home key taken before the system saw it")
                 // Over Orange's screensaver, Home closes it. Not counted toward a double press: an IR
                 // remote's press can come twice (TCL MT5879), and the second opened the recent apps.
-                lastHomeUpAt = if (AerialDream.endForHome()) Long.MIN_VALUE / 2 else event.eventTime
+                lastHomeUpAt = if (OrangeDream.endForHome()) Long.MIN_VALUE / 2 else event.eventTime
                 goHome()
                 closeSystemDialogs()
             }
@@ -1315,10 +1315,10 @@ class HomeGuardService : AccessibilityService() {
     }
 
     /** When a "homekey" broadcast came with Orange in front; see backOnPause. */
-    private var homeInAerialAt = Long.MIN_VALUE / 2
+    private var homeInOrangeAt = Long.MIN_VALUE / 2
 
     /** The Home before it, for a second press: the recent apps once Orange is back. */
-    private var lastHomeInAerialAt = Long.MIN_VALUE / 2
+    private var lastHomeInOrangeAt = Long.MIN_VALUE / 2
     private var recentsWhenBackAt = Long.MIN_VALUE / 2
 
     /**
@@ -1328,17 +1328,17 @@ class HomeGuardService : AccessibilityService() {
      * holding Home is still Xiaomi's task center. Timed by the broadcasts, which come later than
      * the keys while Orange is on its way back: presses 120 ms apart came 350 ms apart or more.
      */
-    private fun noteHomeInAerial() {
+    private fun noteHomeInOrange() {
         val now = SystemClock.uptimeMillis()
         if (!aerialResumed && now - broughtBackAt > 1_000) return
-        if (now - lastHomeInAerialAt < DOUBLE_HOME_BROADCAST_MS) {
-            lastHomeInAerialAt = Long.MIN_VALUE / 2
+        if (now - lastHomeInOrangeAt < DOUBLE_HOME_BROADCAST_MS) {
+            lastHomeInOrangeAt = Long.MIN_VALUE / 2
             recentsWhenBackAt = now
             Log.i(TAG, "Home pressed twice; recent apps once Orange is back")
         } else {
-            lastHomeInAerialAt = now
+            lastHomeInOrangeAt = now
         }
-        homeInAerialAt = now
+        homeInOrangeAt = now
     }
 
     private fun pressHomeForStock(): Boolean {
@@ -1422,7 +1422,7 @@ class HomeGuardService : AccessibilityService() {
         private val TASK_CENTRE_ACTIONS = listOf("com.dangbei.recentstask.action.SHOW_RECENTS_FOR_USER")
         private const val VOLUME_REPEAT_MAX_MS = 8_000L
         private const val HOME_PAUSE_MS = 400L
-        /** "homekey" came 350 ms or more after the key while Orange was busy (see noteHomeInAerial). */
+        /** "homekey" came 350 ms or more after the key while Orange was busy (see noteHomeInOrange). */
         private const val OWN_HOME_MS = 1_500L
         private const val DOUBLE_HOME_BROADCAST_MS = 600L
         private val VOLUME_KEYS = setOf(KeyEvent.KEYCODE_VOLUME_UP, KeyEvent.KEYCODE_VOLUME_DOWN, KeyEvent.KEYCODE_VOLUME_MUTE)
@@ -1596,7 +1596,7 @@ class HomeGuardService : AccessibilityService() {
         private var aerialResumedAt = Long.MIN_VALUE / 2
 
         /** Called when Orange comes back to the front: the stock launcher is fair game again. */
-        fun onAerialResumed() {
+        fun onOrangeResumed() {
             aerialResumed = true
             aerialResumedAt = SystemClock.uptimeMillis()
             val s = instance ?: return
@@ -1614,13 +1614,13 @@ class HomeGuardService : AccessibilityService() {
          * Called when Orange leaves the front: keys are no longer filtered from Android 12 on.
          * True when the pause is only Home's bounce (backOnPause) and Orange is on its way back.
          */
-        fun onAerialPaused(): Boolean {
+        fun onOrangePaused(): Boolean {
             aerialResumed = false
             val s = instance ?: return false
             s.updateKeyFilter()
             // Within the pause Home itself makes, not one the viewer makes after it by opening an app.
-            if (s.backOnPause && SystemClock.uptimeMillis() - s.homeInAerialAt < HOME_PAUSE_MS) {
-                s.homeInAerialAt = Long.MIN_VALUE / 2
+            if (s.backOnPause && SystemClock.uptimeMillis() - s.homeInOrangeAt < HOME_PAUSE_MS) {
+                s.homeInOrangeAt = Long.MIN_VALUE / 2
                 Log.i(TAG, "Orange paused for Home; bringing it back before the stock launcher shows")
                 s.goHome()
                 return true

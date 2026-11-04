@@ -6,7 +6,7 @@ import android.content.Intent
 import android.os.SystemClock
 import android.provider.Settings
 import android.util.Log
-import app.orange.tv.dream.AerialDream
+import app.orange.tv.dream.OrangeDream
 
 /**
  * The TV's own screensaver: Android's dream where the firmware uses it (TCL, most Android TVs), or
@@ -30,8 +30,8 @@ object SystemScreensaver {
         runCatching { Settings.Secure.getString(context.contentResolver, COMPONENTS) }.getOrNull().orEmpty()
 
     /** Orange's own dream is the TV's screensaver (tools/install.sh sets it where dreams are on). */
-    fun isAerials(context: Context): Boolean =
-        dreamsOn(context) && component(context).split(',').firstOrNull() == ComponentName(context, AerialDream::class.java).flattenToString()
+    fun isOrangeSaver(context: Context): Boolean =
+        dreamsOn(context) && component(context).split(',').firstOrNull() == ComponentName(context, OrangeDream::class.java).flattenToString()
 
     /** The dream the firmware came with, or null where it has none on record. */
     fun firmwareDream(context: Context): String? =

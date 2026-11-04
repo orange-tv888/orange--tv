@@ -25,7 +25,7 @@ import app.orange.tv.apps.TileArt
 import app.orange.tv.apps.TileArtFactory
 import app.orange.tv.apps.folderEntry
 import app.orange.tv.apps.sourceEntry
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.Brightness
 import app.orange.tv.system.DiagLog
 import app.orange.tv.system.HomeStatus
@@ -185,11 +185,11 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch { snapshotFlow { SourceLooks.all }.drop(1).collect { if (loaded) arrange() } }
         // An app renamed on the phone page.
         viewModelScope.launch { snapshotFlow { AppNames.all }.drop(1).collect { if (loaded) arrange() } }
-        viewModelScope.launch { snapshotFlow { AerialSettings.previewApps }.drop(1).collect { if (loaded) arrange() } }
+        viewModelScope.launch { snapshotFlow { OrangeSettings.previewApps }.drop(1).collect { if (loaded) arrange() } }
         // Another number of apps a row: the artwork again if four a row wants it larger, else
         // every face at the new size, before the tiles draw them.
         viewModelScope.launch {
-            snapshotFlow { AerialSettings.homeColumns }.drop(1).collect {
+            snapshotFlow { OrangeSettings.homeColumns }.drop(1).collect {
                 if (TileArtFactory.fitColumns()) reload() else if (loaded) prepareFaces()
             }
         }
@@ -297,7 +297,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      */
     private fun prepareFaces() {
         val shown = apps + folderApps.values.flatten()
-        val row = apps.take(AerialSettings.homeColumns)
+        val row = apps.take(OrangeSettings.homeColumns)
         facesJob?.cancel()
         facesJob = viewModelScope.launch {
             val started = SystemClock.uptimeMillis()
@@ -332,7 +332,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun arrange() {
         // Pinned TV inputs share the grid, order and hiding with the apps.
-        val pinned = sources.filter { it.id in AerialSettings.pinnedSources }.map { sourceEntry(context, it) }
+        val pinned = sources.filter { it.id in OrangeSettings.pinnedSources }.map { sourceEntry(context, it) }
         AppCatalog.pinnedSources = pinned
         AppCatalog.sources = sources
         // The inputs Android itself lists can play behind Home through a TvView; the ones Orange
@@ -349,7 +349,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
                 ?: TileArtFactory.forFolder(shown).also { folderArt[folder.id] = shown to it }
             folderEntry(folder, art)
         }
-        apps = AerialSettings.previewApps.takeIf { it > 0 }?.let { arrangement.home.take(it) } ?: arrangement.home
+        apps = OrangeSettings.previewApps.takeIf { it > 0 }?.let { arrangement.home.take(it) } ?: arrangement.home
         AppCatalog.home = arrangement.home
         AppCatalog.folderApps = arrangement.folders
         AppCatalog.hiddenApps = arrangement.hidden
@@ -419,8 +419,8 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** What the TV opens when switched on, named as Home names it; null for nothing. */
     fun bootTargetLabel(): String? {
-        AerialSettings.bootApp?.let { pkg -> return entry(pkg)?.label ?: hiddenApps.firstOrNull { it.key == pkg }?.label ?: pkg }
-        val id = AerialSettings.bootSource ?: return null
+        OrangeSettings.bootApp?.let { pkg -> return entry(pkg)?.label ?: hiddenApps.firstOrNull { it.key == pkg }?.label ?: pkg }
+        val id = OrangeSettings.bootSource ?: return null
         return entry(SOURCE_KEY_PREFIX + id)?.label ?: sources.firstOrNull { it.id == id }?.label
     }
 
@@ -430,7 +430,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun chooseBootTarget(pkg: String? = null, sourceId: String? = null) {
         val before = bootTargetLabel()
-        if (pkg != null) AerialSettings.chooseBootApp(pkg) else AerialSettings.chooseBootSource(sourceId)
+        if (pkg != null) OrangeSettings.chooseBootApp(pkg) else OrangeSettings.chooseBootSource(sourceId)
         val after = bootTargetLabel()
         when {
             after == null -> before?.let { notify(context.getString(R.string.notice_boot_off, it)) }
@@ -446,7 +446,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Pins a TV input to Home (as the first tile, where it is easiest to reach) or takes it off. */
     fun setSourcePinned(source: TvSource, pinned: Boolean) {
-        AerialSettings.setPinned(source.id, pinned)
+        OrangeSettings.setPinned(source.id, pinned)
         arrange()
         if (pinned) {
             val key = apps.firstOrNull { it.source?.id == source.id }?.key
@@ -557,7 +557,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Runs [action] at once, or after the parental PIN when one is set (issue #10). */
     fun whenUnlocked(action: () -> Unit) {
-        if (!AerialSettings.locked) action()
+        if (!OrangeSettings.locked) action()
         else overlay = Overlay.Pin(PinMode.Unlock) { overlay = Overlay.None; action() }
     }
 
@@ -595,7 +595,7 @@ class HomeViewModel(app: Application) : AndroidViewModel(app) {
      */
     fun onHomePressed(resetFocus: Boolean = true) {
         screensaverVisible = false
-        AerialSettings.relock()
+        OrangeSettings.relock()
         overlay = Overlay.None
         movingKey = null
         if (resetFocus) homeResetPending = true

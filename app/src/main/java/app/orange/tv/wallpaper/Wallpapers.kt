@@ -16,7 +16,7 @@ import androidx.core.content.edit
 import app.orange.tv.ui.components.UhdCanvas
 import app.orange.tv.BuildConfig
 import app.orange.tv.guard.GuardSetup
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.DiagLog
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -150,7 +150,7 @@ object Wallpapers {
      * Plays as soon as Home shows it and keys do not stop it: the aerial wallpaper always; the
      * owner's videos when set to (issue #360).
      */
-    val keepsMoving: Boolean get() = selectedId == LIVE || AerialSettings.wallpaperAlwaysMoves
+    val keepsMoving: Boolean get() = selectedId == LIVE || OrangeSettings.wallpaperAlwaysMoves
 
     fun isSource(id: String = selectedId) = id.startsWith(SOURCE_PREFIX)
 
@@ -513,7 +513,7 @@ object Wallpapers {
      */
     fun leaveLiveFilm(film: String, atMs: Long, persist: Boolean = true) {
         // Kept whatever the wallpaper: a screensaver of aerials over another one leaves its film
-        // here too, so the aerial wallpaper chosen later begins on it (AerialSet).
+        // here too, so the aerial wallpaper chosen later begins on it (FilmSet).
         if (!persist) { leftHere = film to atMs; return }
         val picture = livePictureSpot()
         // Let go where the picture is (stopped there, or never moved): nothing to catch up.

@@ -26,7 +26,7 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import app.orange.tv.ui.components.FilmSlot
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.DiagLog
 import app.orange.tv.ui.theme.Motion
 import app.orange.tv.wallpaper.ScreensaverVideos
@@ -63,7 +63,7 @@ fun VideoWallpaper(
         delay(START_AFTER_MS)
         idle = true
     }
-    val play = moving && (idle || AerialSettings.wallpaperAlwaysMoves)
+    val play = moving && (idle || OrangeSettings.wallpaperAlwaysMoves)
     val keepNow by rememberUpdatedState(keep)
 
     fun release() {

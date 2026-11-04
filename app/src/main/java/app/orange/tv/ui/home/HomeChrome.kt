@@ -86,7 +86,7 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import app.orange.tv.R
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.wallpaper.Images
 import app.orange.tv.system.NetKind
 import app.orange.tv.system.NetworkStatus
@@ -660,7 +660,7 @@ fun ShelfClock(
                 .toSaverClock(toSaver, Type.Clock.fontSize, 0.dp, drift)
                 .capBox(Type.Clock.fontSize),
         )
-        Weather.now?.takeIf { AerialSettings.showWeather }?.let { w ->
+        Weather.now?.takeIf { OrangeSettings.showWeather }?.let { w ->
             val place = Weather.place?.takeIf { it.length <= 12 }
             val range = if (w.high != null && w.low != null) stringResource(R.string.weather_high_low, w.high, w.low) else null
             val detail = listOfNotNull(place, stringResource(conditionName(w.kind)), range).joinToString(" · ")
@@ -716,11 +716,11 @@ private fun Modifier.toSaverClock(progress: () -> Float, fontSize: TextUnit, cap
             scaleX = k
             scaleY = k
             val targetCapTop = SaverClockTop.toPx() + SaverClockStyle.fontSize.toPx() * CAP_TOP
-            val targetLeft = if (AerialSettings.clockRight) rootW - SaverClockSide.toPx() - box.width * s else SaverClockSide.toPx()
+            val targetLeft = if (OrangeSettings.clockRight) rootW - SaverClockSide.toPx() - box.width * s else SaverClockSide.toPx()
             translationX = p * (targetLeft - box.left + drift.x.toPx())
             translationY = p * (targetCapTop - s * capTop.toPx() - box.top + drift.y.toPx())
             // The screensaver shows no time: Home's goes as the screensaver comes.
-            if (!AerialSettings.screensaverClock) alpha = 1f - p
+            if (!OrangeSettings.screensaverClock) alpha = 1f - p
             // Its shadow lies outside the capBox: an offscreen buffer would cut it as it fades.
             compositingStrategy = CompositingStrategy.ModulateAlpha
         }
@@ -762,7 +762,7 @@ fun CornerClock(now: LocalDateTime, modifier: Modifier = Modifier, toSaver: () -
             timeText(now), style = Type.SmallClock.copy(fontSize = Type.Title.fontSize, color = dim, shadow = shadow),
             modifier = Modifier.toSaverClock(toSaver, Type.Title.fontSize, Type.Title.fontSize.value.dp * CAP_TOP, drift),
         )
-        Weather.now?.takeIf { AerialSettings.showWeather }?.let { w ->
+        Weather.now?.takeIf { OrangeSettings.showWeather }?.let { w ->
             val aside = Modifier.graphicsLayer {
                 alpha = 1f - (toSaver() * 2.5f).coerceIn(0f, 1f)
                 compositingStrategy = CompositingStrategy.ModulateAlpha

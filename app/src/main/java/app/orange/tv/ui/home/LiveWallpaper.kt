@@ -33,15 +33,15 @@ import androidx.media3.common.PlaybackException
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
 import app.orange.tv.ui.components.FilmSlot
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.DiagLog
 import app.orange.tv.ui.theme.Motion
-import app.orange.tv.wallpaper.Orange
-import app.orange.tv.wallpaper.AerialFormats
-import app.orange.tv.wallpaper.AerialQuality
-import app.orange.tv.wallpaper.AerialSet
-import app.orange.tv.wallpaper.AerialStream
-import app.orange.tv.wallpaper.Aerials
+import app.orange.tv.wallpaper.Film
+import app.orange.tv.wallpaper.FilmFormats
+import app.orange.tv.wallpaper.FilmQuality
+import app.orange.tv.wallpaper.FilmSet
+import app.orange.tv.wallpaper.FilmStream
+import app.orange.tv.wallpaper.Films
 import app.orange.tv.wallpaper.ScreensaverMode
 import app.orange.tv.wallpaper.Wallpapers
 import kotlinx.coroutines.Dispatchers
@@ -89,7 +89,7 @@ internal fun rememberStops(letGo: () -> Boolean): Int {
  * (HomeScreen): which film is showing, how far in, and stepping to the next or previous one.
  */
 class LiveFilm {
-    var film by mutableStateOf<Orange?>(null); internal set
+    var film by mutableStateOf<Film?>(null); internal set
     internal var player: ExoPlayer? = null
 
     /**
@@ -106,15 +106,15 @@ class LiveFilm {
     val positionMs: Long get() = player?.currentPosition ?: 0L
 
     /** Adds a film after the one playing and goes to it; set by the player that has the film. */
-    internal var insert: ((Orange) -> Unit)? = null
+    internal var insert: ((Film) -> Unit)? = null
 
     /**
      * The viewer's left and right in the screensaver carrying this film: right brings in a new
-     * film (AerialSet.addNew), left goes back to one kept.
+     * film (FilmSet.addNew), left goes back to one kept.
      */
     fun skip(context: android.content.Context, step: Int) {
         val p = player ?: return
-        if (step < 0) p.seekToPreviousMediaItem() else insert?.invoke(AerialSet.addNew(context))
+        if (step < 0) p.seekToPreviousMediaItem() else insert?.invoke(FilmSet.addNew(context))
     }
 
     /** The film and the moment showing now, while a player has it. */
@@ -209,17 +209,17 @@ fun LiveWallpaper(
     }
 
     fun open(): ExoPlayer {
-        val quality = AerialFormats.forWallpaper(context)
+        val quality = FilmFormats.forWallpaper(context)
         val overHttp = Build.VERSION.SDK_INT < Build.VERSION_CODES.N
         // Where it was let go (into an app, or a screensaver's films), else the picture's own
-        // moment; then the other films kept (AerialSet), in the order the screensaver plays them.
+        // moment; then the other films kept (FilmSet), in the order the screensaver plays them.
         val spot = Wallpapers.liveSpot()
         fresh = false
-        val films = AerialSet.playlist(context, spot?.first)
+        val films = FilmSet.playlist(context, spot?.first)
         val resume = films.first().takeIf { it.id == spot?.first }
         var failures = 0
         var rendered = false
-        return AerialStream.player(context, quality).apply {
+        return FilmStream.player(context, quality).apply {
             addListener(object : Player.Listener {
                 override fun onRenderedFirstFrame() {
                     rendered = true
@@ -233,7 +233,7 @@ fun LiveWallpaper(
                 }
 
                 override fun onMediaItemTransition(mediaItem: MediaItem?, reason: Int) {
-                    live.film = Aerials.all(context).firstOrNull { it.id == mediaItem?.mediaId }
+                    live.film = Films.all(context).firstOrNull { it.id == mediaItem?.mediaId }
                     if (reason != Player.MEDIA_ITEM_TRANSITION_REASON_PLAYLIST_CHANGED) DiagLog.i("wallpaper film now ${mediaItem?.mediaId} (reason $reason)")
                 }
 
@@ -251,11 +251,11 @@ fun LiveWallpaper(
                 }
             })
             live.insert = { film ->
-                addMediaItem(currentMediaItemIndex + 1, AerialStream.mediaItem(film, quality, overHttp))
+                addMediaItem(currentMediaItemIndex + 1, FilmStream.mediaItem(film, quality, overHttp))
                 seekTo(currentMediaItemIndex + 1, 0L)
                 if (playbackState == Player.STATE_IDLE) prepare()
             }
-            setMediaItems(films.map { AerialStream.mediaItem(it, quality, overHttp) }, 0, if (resume != null) spot?.second ?: 0L else 0L)
+            setMediaItems(films.map { FilmStream.mediaItem(it, quality, overHttp) }, 0, if (resume != null) spot?.second ?: 0L else 0L)
             surface?.let { setVideoSurfaceView(it) }
             prepare()
             live.player = this
@@ -334,9 +334,9 @@ fun LiveWallpaper(
     LaunchedEffect(live.film, showing) {
         val film = live.film ?: return@LaunchedEffect
         if (!showing || Wallpapers.screensaver != ScreensaverMode.Orange) return@LaunchedEffect
-        val saver = AerialFormats.forScreensaver(context, overWallpaper = true)
-        if (saver != AerialFormats.forWallpaper(context)) {
-            AerialStream.prepareSeek(context, film, saver, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        val saver = FilmFormats.forScreensaver(context, overWallpaper = true)
+        if (saver != FilmFormats.forWallpaper(context)) {
+            FilmStream.prepareSeek(context, film, saver, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
         }
     }
 
@@ -381,7 +381,7 @@ fun LiveWallpaper(
                 // left black there until the picture came back, an older one. Stopped on its frame,
                 // that frame becomes the picture first, within LEAVE_FRAME_MS: the decoder is held,
                 // paused, that much longer. Not into a screensaver of its own, which needs it at once.
-                if (cover.value > 0f && !otherFormatNow && !AerialStart.running) leaveOnPicture(p)
+                if (cover.value > 0f && !otherFormatNow && !FilmStart.running) leaveOnPicture(p)
                 release()
                 return@LaunchedEffect
             }
@@ -442,7 +442,7 @@ fun LiveWallpaper(
                         live.stopped = false
                         // The picture is this frame: it shows rather than black while Home is still
                         // seen, an app coming in over it (see leaveOnPicture).
-                        if (!otherFormatNow && !AerialStart.running) cover.snapTo(0f)
+                        if (!otherFormatNow && !FilmStart.running) cover.snapTo(0f)
                         release()
                         return@LaunchedEffect
                     }
@@ -458,7 +458,7 @@ fun LiveWallpaper(
                     if (copy != null) Wallpapers.useLiveFrame(copy, film, at)
                     if (!keepNow) {
                         live.stopped = false
-                        if (!otherFormatNow && !AerialStart.running) cover.snapTo(0f)
+                        if (!otherFormatNow && !FilmStart.running) cover.snapTo(0f)
                         release()
                         return@LaunchedEffect
                     }
@@ -506,7 +506,7 @@ fun LiveWallpaper(
             // in; not under a screensaver of aerials, which moves the spot on every second.
             delay(BEHIND_CATCH_UP_MS)
             val left = Wallpapers.leftLiveSpot()
-            if (!keepNow && !otherFormatNow && !AerialStart.running && player == null && left != null) {
+            if (!keepNow && !otherFormatNow && !FilmStart.running && player == null && left != null) {
                 catchUp(left, underFilm = true)
                 if (player == null) reader.close()
             }
@@ -649,7 +649,7 @@ private const val BEHIND_CATCH_UP_MS = 3_000L
  * every time, 16 frames dropped each (frames of 4K reaching the screen: 24 a second, 30 with none
  * taken; 1080p films were not held up). Remembered for the process, as [pixelCopy] is.
  */
-internal val glassFrames: Boolean get() = !glassCostly && !AerialSettings.lite
+internal val glassFrames: Boolean get() = !glassCostly && !OrangeSettings.lite
 
 private var glassCostly = false
 
@@ -873,8 +873,8 @@ private class FrameReader(private val context: android.content.Context) {
     private fun retrieverFor(w: Worker, id: String): MediaMetadataRetriever? {
         if (w.openFor == id) w.retriever?.let { return it }
         w.close()
-        val film = Aerials.all(context).firstOrNull { it.id == id } ?: return null
-        val url = AerialStream.url(film, AerialQuality.Hd, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
+        val film = Films.all(context).firstOrNull { it.id == id } ?: return null
+        val url = FilmStream.url(film, FilmQuality.Hd, Build.VERSION.SDK_INT < Build.VERSION_CODES.N)
         val started = android.os.SystemClock.elapsedRealtime()
         val mmr = open(url, ranged = urlRefused) ?: run {
             // TCL x32a0 (Android 9): the retriever fails at once on Apple's https address that

@@ -17,7 +17,7 @@ import app.orange.tv.apps.IconLibrary
 import app.orange.tv.apps.SourceDevice
 import app.orange.tv.apps.SourceLooks
 import app.orange.tv.apps.TileArtFactory
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.Diagnostics
 import app.orange.tv.system.currentNetwork
 import app.orange.tv.settings.FocusStyle
@@ -75,17 +75,17 @@ class PhoneServer private constructor(private val context: Context, private val 
                     val f = form(session)
                     val on = f["on"] == "1"
                     val known = when (f["key"]) {
-                        "wallpaperAlwaysMoves" -> { onMain { AerialSettings.chooseWallpaperAlwaysMoves(on) }; true }
-                        "showWeather" -> { onMain { AerialSettings.chooseShowWeather(on) }; true }
-                        "screensaverClock" -> { onMain { AerialSettings.chooseScreensaverClock(on) }; true }
-                        "burnIn" -> { onMain { AerialSettings.chooseBurnIn(on) }; true }
+                        "wallpaperAlwaysMoves" -> { onMain { OrangeSettings.chooseWallpaperAlwaysMoves(on) }; true }
+                        "showWeather" -> { onMain { OrangeSettings.chooseShowWeather(on) }; true }
+                        "screensaverClock" -> { onMain { OrangeSettings.chooseScreensaverClock(on) }; true }
+                        "burnIn" -> { onMain { OrangeSettings.chooseBurnIn(on) }; true }
                         else -> false
                     }
                     json(state().put("saved", known))
                 }
                 session.method == Method.POST && path == "/api/focus" -> {
                     val style = FocusStyle.of(form(session)["style"])
-                    onMain { AerialSettings.chooseFocusStyle(style) }
+                    onMain { OrangeSettings.chooseFocusStyle(style) }
                     json(state())
                 }
                 session.method == Method.POST && path == "/api/delete" -> {
@@ -207,11 +207,11 @@ class PhoneServer private constructor(private val context: Context, private val 
             .put("videos", JSONArray().apply {
                 ScreensaverVideos.all(context).forEach { put(JSONObject().put("id", it.id).put("name", it.name)) }
             })
-            .put("focusStyle", AerialSettings.focusStyle.key)
-            .put("wallpaperAlwaysMoves", AerialSettings.wallpaperAlwaysMoves)
-            .put("showWeather", AerialSettings.showWeather)
-            .put("screensaverClock", AerialSettings.screensaverClock)
-            .put("burnIn", AerialSettings.burnIn)
+            .put("focusStyle", OrangeSettings.focusStyle.key)
+            .put("wallpaperAlwaysMoves", OrangeSettings.wallpaperAlwaysMoves)
+            .put("showWeather", OrangeSettings.showWeather)
+            .put("screensaverClock", OrangeSettings.screensaverClock)
+            .put("burnIn", OrangeSettings.burnIn)
             .put("wallpapers", list)
             .put("apps", JSONArray().apply {
                 // Pinned inputs first, then apps by the name Home shows. [default] is the name a
@@ -247,7 +247,7 @@ class PhoneServer private constructor(private val context: Context, private val 
                     val look = SourceLooks.of(src.id)
                     put(JSONObject().put("id", src.id).put("port", src.label).put("device", src.deviceName ?: "")
                         .put("name", look?.let { it.name ?: it.device?.let { d -> context.getString(d.label) } } ?: "")
-                        .put("pinned", src.id in AerialSettings.pinnedSources))
+                        .put("pinned", src.id in OrangeSettings.pinnedSources))
                 }
             })
             .put("folders", JSONArray().apply {
@@ -274,13 +274,13 @@ class PhoneServer private constructor(private val context: Context, private val 
         val folders = JSONObject()
         AppCatalog.folderApps.forEach { (id, apps) -> folders.put(id, JSONArray().apply { apps.forEach { put(tile(it)) } }) }
         // With the parental PIN on, hidden apps stay hidden from here: on the TV, seeing them takes the PIN.
-        val locked = AerialSettings.locked
+        val locked = OrangeSettings.locked
         return JSONObject()
             .put("home", JSONArray().apply { AppCatalog.home.forEach { put(tile(it)) } })
             .put("folders", folders)
             .put("hidden", JSONArray().apply { if (!locked) AppCatalog.hiddenApps.forEach { put(tile(it)) } })
             .put("hiddenCount", AppCatalog.hiddenApps.size)
-            .put("columns", AerialSettings.homeColumns)
+            .put("columns", OrangeSettings.homeColumns)
             .put("locked", locked)
             .put("ready", AppCatalog.layout != null)
     }
@@ -300,7 +300,7 @@ class PhoneServer private constructor(private val context: Context, private val 
             "move" -> if (key in known && target in known) ({ ops.move(key, target) }) else null
             "movein" -> if (key in known && target in known) ({ ops.moveInFolder(key, target) }) else null
             "hide" -> if (key in known) ({ ops.hide(key) }) else null
-            "unhide" -> if (key in known && !AerialSettings.locked) ({ ops.unhide(key) }) else null
+            "unhide" -> if (key in known && !OrangeSettings.locked) ({ ops.unhide(key) }) else null
             "folder" -> if (key in known && !key.startsWith(FOLDER_KEY_PREFIX)) ({ ops.toFolder(key, folder.ifEmpty { null }) }) else null
             "unfolder" -> if (key in known) ({ ops.outOfFolder(key) }) else null
             "ungroup" -> if (folder in AppCatalog.folderApps) ({ ops.ungroup(folder) }) else null

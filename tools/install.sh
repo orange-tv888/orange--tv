@@ -336,10 +336,7 @@ fi
 # TVs on Android's standard screensaver (TCL's carries a membership upsell) get Orange's instead,
 # so it also starts while another app sits idle. Xiaomi uses its own; Orange covers it from Home.
 if [ "$(adb shell settings get secure screensaver_enabled | tr -d '\r')" = 1 ]; then
-  # The dream service is still called AerialDream: it is a class name, and a TV that already has it as
-  # its screensaver stored that exact component in secure settings, so renaming it would blank the
-  # screensaver on every installed TV until it was set again.
-  adb shell settings put secure screensaver_components "$PKG/$PKG.dream.AerialDream"
+  adb shell settings put secure screensaver_components "$PKG/$PKG.dream.OrangeDream"
   # Some firmwares (TCL) put their own back on every boot; Orange restores it when it starts.
   adb shell am broadcast -a "$PKG.CONFIG" -n "$PKG/.guard.ConfigReceiver" --ez own_screensaver true >/dev/null
   echo "Orange's screensaver is now the TV's screensaver."
@@ -374,9 +371,11 @@ if [ "$FLAVOR" = standard ]; then
   # value is kept on the TV for restore.sh.
   VT_HOME=$(adb shell getprop persist.vt.use_home_pkg | tr -d '\r')
   if [ -n "$VT_HOME" ] && [ "$VT_HOME" != "$PKG" ]; then
-    # Key left as aerial_vt_home_pkg on purpose: restore.sh looks it up by that name, and on TVs that
-    # already took over Home the value is sitting in the TV's own settings under it.
-    adb shell settings put global aerial_vt_home_pkg "$VT_HOME"
+    # Renamed from aerial_vt_home_pkg in 26.5.0. restore.sh reads either name, so a TV that stored
+    # it under the old one still gets its launcher back; this runs on every install, so the value
+    # ends up under the new name from now on.
+    adb shell settings put global orange_vt_home_pkg "$VT_HOME"
+    adb shell settings delete global aerial_vt_home_pkg >/dev/null 2>&1 || true
     adb shell setprop persist.vt.use_home_pkg "$PKG"
     echo "Hisense: Home now opens Orange instead of $VT_HOME."
   fi

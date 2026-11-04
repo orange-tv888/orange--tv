@@ -81,7 +81,7 @@ import app.orange.tv.HomeViewModel
 import app.orange.tv.Overlay
 import app.orange.tv.R
 import app.orange.tv.apps.SourceLooks
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.system.HomeStatus
 import app.orange.tv.system.LaunchFallback
 import app.orange.tv.system.NetKind
@@ -703,7 +703,7 @@ private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
         Spacer(Modifier.height(10.dp))
         BasicText(stringResource(R.string.cc_inputs_pin), style = Type.Callout, modifier = Modifier.padding(start = 14.dp, bottom = 6.dp))
         vm.sources.forEachIndexed { i, source ->
-            val pinned = source.id in AerialSettings.pinnedSources
+            val pinned = source.id in OrangeSettings.pinnedSources
             ChoiceRow(
                 text = name(source),
                 selected = pinned,
@@ -721,12 +721,12 @@ private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
         BasicText(stringResource(R.string.cc_inputs_boot), style = Type.Callout, modifier = Modifier.padding(start = 14.dp, bottom = 6.dp))
         ChoiceRow(
             text = stringResource(R.string.cc_inputs_boot_none),
-            selected = !AerialSettings.hasBootTarget,
+            selected = !OrangeSettings.hasBootTarget,
             focusRequester = null,
             onClick = { vm.chooseBootTarget() },
         )
         // An app is chosen from its tile's menu; here it only shows, and "nothing" clears it.
-        AerialSettings.bootApp?.let { pkg ->
+        OrangeSettings.bootApp?.let { pkg ->
             ChoiceRow(
                 text = vm.entry(pkg)?.label ?: pkg,
                 selected = true,
@@ -737,7 +737,7 @@ private fun InputSettingsPage(vm: HomeViewModel, takeFocus: Boolean) {
         vm.sources.forEach { source ->
             ChoiceRow(
                 text = name(source),
-                selected = source.id == AerialSettings.bootSource,
+                selected = source.id == OrangeSettings.bootSource,
                 focusRequester = null,
                 onClick = { vm.chooseBootTarget(sourceId = source.id) },
             )

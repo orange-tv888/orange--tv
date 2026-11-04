@@ -74,14 +74,14 @@ import app.orange.tv.apps.SourceLooks
 import app.orange.tv.HomeViewModel
 import app.orange.tv.Overlay
 import app.orange.tv.R
-import app.orange.tv.settings.AerialSettings
+import app.orange.tv.settings.OrangeSettings
 import app.orange.tv.apps.AppEntry
 import app.orange.tv.ui.control.ControlCenter
 import app.orange.tv.ui.donate.DonateSheet
 import app.orange.tv.ui.optimize.OptimizeSheet
 import app.orange.tv.ui.wallpaper.SheetCovers
 import app.orange.tv.ui.wallpaper.WallpaperSheet
-import app.orange.tv.wallpaper.AerialFormats
+import app.orange.tv.wallpaper.FilmFormats
 import app.orange.tv.wallpaper.ScreensaverMode
 import app.orange.tv.wallpaper.Wallpapers
 import app.orange.tv.ui.components.liquidGlass
@@ -150,7 +150,7 @@ private val GridMargin = 56.dp
 private val RowAboveTop = 72.dp
 
 /**
- * The gap between tiles for [columns] a row (AerialSettings.homeColumns): about a fifth of a tile,
+ * The gap between tiles for [columns] a row (OrangeSettings.homeColumns): about a fifth of a tile,
  * as tvOS keeps it when it fits six, so four or six look like five scaled rather than packed.
  */
 internal fun gridGap(columns: Int): Dp = when (columns) {
@@ -309,7 +309,7 @@ fun HomeScreen(
     var pillFocused by remember { mutableStateOf(false) }
     var lastFocusedIndex by remember { mutableStateOf(0) }
     val focusedIndex = apps.indexOfFirst { it.key == focusedKey }
-    val columns = AerialSettings.homeColumns
+    val columns = OrangeSettings.homeColumns
     val focusedRow = if (pillFocused || focusedIndex < 0) 0 else focusedIndex / columns
     val gridEnabled = overlay == Overlay.None
 
@@ -328,7 +328,7 @@ fun HomeScreen(
     var filmFailed by remember(vm.screensaverVisible) { mutableStateOf(false) }
     val filmSaverChosen = remember(vm.screensaverVisible) {
         vm.screensaverVisible && Wallpapers.selectedId == Wallpapers.LIVE && Wallpapers.screensaver == ScreensaverMode.Orange &&
-            AerialFormats.screensaverCarriesWallpaper(appContext) &&
+            FilmFormats.screensaverCarriesWallpaper(appContext) &&
             (filmCover.value > 0.5f || focusedRow == 0 && overlay == Overlay.None && moving == null)
     }
     val filmSaver = filmSaverChosen && !filmFailed
@@ -469,7 +469,7 @@ fun HomeScreen(
         dragged = false
         // Handled even when that is turned off: unhandled, Back would close Home itself.
         if (focusedRow > 0 || scrolled) focusApp(focusedIndex.coerceAtLeast(0) % columns)
-        else if (AerialSettings.backStartsScreensaver) onStartScreensaver()
+        else if (OrangeSettings.backStartsScreensaver) onStartScreensaver()
     }
 
     BoxWithConstraints(
@@ -522,18 +522,18 @@ fun HomeScreen(
     ) {
         val rows = (apps.size + columns - 1) / columns
         // With a single row of apps the two-row layout would leave the bottom of the screen empty.
-        val oneRow = AerialSettings.oneRowHome || rows <= 1
+        val oneRow = OrangeSettings.oneRowHome || rows <= 1
         // In two rows the second is on screen already: down to it stays on the shelf, under the
         // same picture and plate, and only the row after it goes into the grid (issue #633: the
         // grid's frosted picture flashed up on the way to an app in the second row).
         val inGrid = focusedRow >= if (oneRow) 1 else 2
         val saverFadeOffscreen = remember { DiagLog.saverFadeOffscreen(appContext) }
         // With every name shown, the top row's go on its glass plate, which grows to hold them.
-        val plateNames = AerialSettings.showAllNames && AerialSettings.homePlate
-        val peek = AerialSettings.peekNextRow
-        val hasPlate = AerialSettings.homePlate
-        val largeClock = AerialSettings.largeClock
-        val clockRightNow = AerialSettings.clockRight
+        val plateNames = OrangeSettings.showAllNames && OrangeSettings.homePlate
+        val peek = OrangeSettings.peekNextRow
+        val hasPlate = OrangeSettings.homePlate
+        val largeClock = OrangeSettings.largeClock
+        val clockRightNow = OrangeSettings.clockRight
         val metrics = remember(maxWidth, maxHeight, columns, oneRow, plateNames, peek, hasPlate, largeClock, clockRightNow) {
             GridMetrics(maxWidth, maxHeight, columns, oneRow, plateNames, peek, hasPlate, largeClock, clockRightNow)
         }
@@ -624,7 +624,7 @@ fun HomeScreen(
                     (overlay is Overlay.AppMenu && overlay.inFolder == null),
                 panel = overlay != Overlay.None,
                 otherFormatSaver = vm.screensaverVisible && !filmSaver && Wallpapers.screensaver == ScreensaverMode.Orange &&
-                    !AerialFormats.screensaverCarriesWallpaper(appContext),
+                    !FilmFormats.screensaverCarriesWallpaper(appContext),
                 lastInputAt = { vm.lastInputAt },
                 live = liveFilm,
             )
@@ -672,7 +672,7 @@ fun HomeScreen(
             // there are, which sit at its left: sized to three apps it read as a stray panel (#284).
             // In two rows it holds both: under the top row alone, the second sat beside it on the
             // bare wallpaper, as if left off the shelf.
-            val plate = if (apps.isEmpty() || !AerialSettings.homePlate) null else with(density) {
+            val plate = if (apps.isEmpty() || !OrangeSettings.homePlate) null else with(density) {
                 val second = if (metrics.shelfRows > 1) metrics.shelfSecond else 0.dp
                 Rect(
                     (metrics.margin - PlatePadH).toPx(),
@@ -721,10 +721,10 @@ fun HomeScreen(
                     .fillMaxSize()
                     .offset { IntOffset(0, -scroll.value.roundToInt()) },
             ) {
-                val clockRight = AerialSettings.clockRight
+                val clockRight = OrangeSettings.clockRight
                 // The large clock stands over the top row; the small one is the time and weather in
                 // one line, top left or beside the pill, so the wallpaper keeps the screen.
-                if (AerialSettings.largeClock) {
+                if (OrangeSettings.largeClock) {
                     ShelfClock(
                         now = now,
                         alignEnd = clockRight,
@@ -858,7 +858,7 @@ fun HomeScreen(
                 .graphicsLayer { alpha = if (overlay is Overlay.ControlCenter) 0f else 1f },
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (!AerialSettings.largeClock && AerialSettings.clockRight) {
+            if (!OrangeSettings.largeClock && OrangeSettings.clockRight) {
                 CornerClock(
                     now = now,
                     modifier = Modifier
@@ -1002,8 +1002,8 @@ fun HomeScreen(
                 val entry = vm.entry(key)
                 val source = entry?.source
                 when {
-                    source != null -> vm.chooseBootTarget(sourceId = source.id.takeIf { it != AerialSettings.bootSource })
-                    entry != null -> vm.chooseBootTarget(pkg = key.takeIf { it != AerialSettings.bootApp })
+                    source != null -> vm.chooseBootTarget(sourceId = source.id.takeIf { it != OrangeSettings.bootSource })
+                    entry != null -> vm.chooseBootTarget(pkg = key.takeIf { it != OrangeSettings.bootApp })
                 }
             },
             onSourceDevice = { id, device ->
@@ -1055,7 +1055,7 @@ fun HomeScreen(
             },
             onPin = { on ->
                 if (on) vm.overlay = Overlay.Pin(PinMode.Create) { vm.overlay = Overlay.Wallpaper }
-                else vm.whenUnlocked { AerialSettings.choosePin(null); vm.overlay = Overlay.Wallpaper }
+                else vm.whenUnlocked { OrangeSettings.choosePin(null); vm.overlay = Overlay.Wallpaper }
             },
             onDonate = { vm.whenUnlocked { vm.overlay = Overlay.Donate } },
         )

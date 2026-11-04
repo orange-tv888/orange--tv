@@ -351,12 +351,12 @@ object Updates {
         try {
             installer.openSession(id).use { session ->
                 file.inputStream().use { input ->
-                    session.openWrite("aerial.apk", 0, file.length()).use { out ->
+                    session.openWrite("orange.apk", 0, file.length()).use { out ->
                         input.copyTo(out)
                         session.fsync(out)
                     }
                 }
-                if (dm != null) session.openWrite("aerial.dm", 0, dm.size.toLong()).use { out ->
+                if (dm != null) session.openWrite("orange.dm", 0, dm.size.toLong()).use { out ->
                     out.write(dm)
                     session.fsync(out)
                 }
@@ -523,7 +523,7 @@ object Updates {
     private fun apkFile(context: Context): File {
         // Android 5 and 6 installers read a file:// URI, so there the APK sits where they can read it.
         val dir = if (Build.VERSION.SDK_INT >= 24) context.cacheDir else context.externalCacheDir ?: context.cacheDir
-        return File(File(dir, "updates"), "aerial.apk")
+        return File(File(dir, "updates"), "orange.apk")
     }
 
     /**
