@@ -33,6 +33,8 @@ object Sounds {
     private var select = 0
     private var back = 0
     private var limit = 0
+    private var bootPool: SoundPool? = null
+    private var boot = 0
     private var lastDpadAt = 0L
     private var lastMove = AudioManager.FX_FOCUS_NAVIGATION_DOWN
     private var tickedFor = -1L
@@ -98,6 +100,39 @@ object Sounds {
     }
 
     fun select() = play(AudioManager.FX_KEY_CLICK, Kind.Select)
+
+    /**
+     * The start-up chime, once, when Orange comes up with the TV.
+     *
+     * It has its own pool: [ownPool] is only filled when the Orange set is chosen, and this sound
+     * is wanted with either set — it is the TV being switched on, not a key press. Off stays off:
+     * a TV whose sounds were turned off should not announce itself either.
+     *
+     * Played only after the sample has loaded (the load is asynchronous and the process is a few
+     * hundred milliseconds old when this is first called), otherwise the chime is silently
+     * dropped on exactly the occasion it exists for.
+     */
+    fun boot() {
+        if (OrangeSettings.uiSounds == UiSounds.Off) return
+        bootPool?.let { pool ->
+            if (boot != 0) pool.play(boot, 1f, 1f, 1, 0, 1f)
+            return
+        }
+        val context = app ?: return
+        // USAGE_MEDIA, not the sonification usage the key sounds use: this is the start of
+        // watching something, it should follow the volume the TV was left at, and a TV muted at
+        // night must stay quiet.
+        val attrs = AudioAttributes.Builder()
+            .setUsage(AudioAttributes.USAGE_MEDIA)
+            .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
+            .build()
+        val pool = SoundPool.Builder().setMaxStreams(1).setAudioAttributes(attrs).build()
+        boot = pool.load(context, R.raw.boot, 1)
+        pool.setOnLoadCompleteListener { p, id, status ->
+            if (status == 0 && id == boot) p.play(id, 1f, 1f, 1, 0, 1f)
+        }
+        bootPool = pool
+    }
 
     /** A slider moved one step (volume, brightness). */
     fun step() = play(lastMove, Kind.Move)

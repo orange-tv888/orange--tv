@@ -1,14 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Source: docs/brand/icon.svg (same mark as the website logo). -->
+<!-- Source: docs/brand/icon.svg. A flat off-white, not a gradient: the mark is an orange ring
+     and a dark stem, and both need a light, quiet ground to read against a TV's app row.
+     Kept as a full-bleed rect so any launcher shape (circle, squircle, square) shows the same
+     colour to its edge. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:pathData="M0,0h108v108h-108z">
-        <aapt:attr name="android:fillColor">
-            <gradient android:type="linear" android:startX="18" android:startY="18"
-                android:endX="90" android:endY="90"
-                android:startColor="#FFFFA733" android:endColor="#FFFF5E1A" />
-        </aapt:attr>
-    </path>
+    <path android:pathData="M0,0h108v108h-108z" android:fillColor="#FFEEEDEB" />
 </vector>

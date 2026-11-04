@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 108 108">
   <!-- Adaptive-icon canvas: 108 x 108; launchers show the central 72 (safe zone 66).
-       Same mark as the website logo (site/favicon.svg), scaled 2.25x into the visible 72. -->
-  <defs>
-    <linearGradient id="bg" x1="18" y1="18" x2="90" y2="90" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFA733"/>
-      <stop offset="1" stop-color="#FF5E1A"/>
-    </linearGradient>
-  </defs>
-  <rect width="108" height="108" fill="url(#bg)"/>
-  <path d="M33.75 65.25c6.75-13.5 13.5-20.25 20.25-20.25s13.5 6.75 20.25 20.25" fill="none" stroke="#FFFFFF" stroke-width="5.4" stroke-linecap="round"/>
+       The mark is one ring plus an "r"-shaped stem: an orange O whose top carries a short
+       stalk bending to the right, so it reads as an orange rather than a letter. Both are
+       strokes, not filled outlines, so the corners stay exact at every size.
+       tools/render-brand.py holds the same numbers and draws the mipmaps and the banner from
+       them; site/favicon.svg is the same mark at 32 px. Change all three together. -->
+  <rect width="108" height="108" fill="#EEEDEB"/>
+  <circle cx="54.07" cy="58.52" r="20.69" fill="none" stroke="#FEB05D" stroke-width="7.07"/>
+  <path d="M54.28 34.65V27.16" fill="none" stroke="#5A5957" stroke-width="3.78" stroke-linecap="round"/>
+  <path d="M54.28 29.26c1.72-1.06 4.22-1.36 6.72-1.36 2 0 3.3.2 4 .45"
+        fill="none" stroke="#5A5957" stroke-width="3.78" stroke-linecap="round"/>
 </svg>

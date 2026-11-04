@@ -1,9 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Source: docs/brand/icon.svg. The arc sits inside the 66dp safe zone of the 108dp canvas. -->
+<!-- Source: docs/brand/icon.svg (same numbers). One ring plus an "r"-shaped stem: an orange O
+     whose top carries a short stalk bending right, so it reads as an orange and not a letter.
+     The whole mark fits inside the 66dp safe zone of the 108dp canvas, so no launcher shape
+     can clip the stem. Drawn as strokes, as in the SVG, so the radii scale cleanly. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path android:pathData="M33.75,65.25c6.75,-13.5 13.5,-20.25 20.25,-20.25s13.5,6.75 20.25,20.25"
-        android:strokeColor="#FFFFFFFF" android:strokeWidth="5.4"
+    <!-- The ring: r=20.69 with a 7.07 stroke is 17.15 to 24.22 from the centre, i.e. the
+         245/346 outer-to-inner ratio measured on the drawn art. -->
+    <path android:pathData="M33.38,58.52a20.69,20.69 0 1,1 41.38,0a20.69,20.69 0 1,1 -41.38,0"
+        android:strokeColor="#FFFEB05D" android:strokeWidth="7.07"
+        android:fillColor="#00000000" />
+    <!-- The stem: an upright that stands above the ring, and a stalk from its middle bending
+         right. Two paths rather than one, because the upright overshoots the stalk. -->
+    <path android:pathData="M54.28,34.65L54.28,27.16"
+        android:strokeColor="#FF5A5957" android:strokeWidth="3.78"
+        android:strokeLineCap="round" android:fillColor="#00000000" />
+    <path android:pathData="M54.28,29.26c1.72,-1.06 4.22,-1.36 6.72,-1.36 2,0 3.3,0.2 4,0.45"
+        android:strokeColor="#FF5A5957" android:strokeWidth="3.78"
         android:strokeLineCap="round" android:fillColor="#00000000" />
 </vector>
