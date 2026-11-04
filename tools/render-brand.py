@@ -145,11 +145,21 @@ def banner(scale, centre=False):
         group = (x + right) - mark_left
         shift = (w - group) / 2 - mark_left
         dx, x = dx + shift, x + shift
+    # Seat the ring like a capital O: its outer bottom on the baseline, so the ring and the "r"
+    # stand on one line. Measured against the "r" rather than the string's own bbox, because the
+    # "g" hangs below the baseline and would drag the mark down by its descender. Left as it was,
+    # the ring sat 14.4 dp below the baseline at 50 dp type — which reads as a lowercase o that
+    # fell over, not as the capital of its own wordmark.
+    probe_y0 = probe.textbbox((0, 0), "r", font=font)[3]
+    dy += probe_y0 - mark_layer(w, k, dx, dy).getbbox()[3]
+    # With the mark on the baseline the pair is one block; centre that block, descender and
+    # stalk included, rather than centring the text and letting the stalk stick out the top.
+    mark_box = mark_layer(w, k, dx, dy).getbbox()
+    y = h / 2 - (min(mark_box[1], top) + max(mark_box[3], bottom)) / 2
+    dy += y
     img.alpha_composite(mark_layer(w, k, dx, dy, ring=(255, 255, 255, 255), stem=(255, 255, 255, 255)))
-    y = (h - (bottom - top)) / 2 - top + 2 * k_screen
     ImageDraw.Draw(img).text((x, y), text, font=font, fill=(255, 255, 255, 255))
     return img.convert("RGB").resize((320 * scale, 180 * scale), Image.LANCZOS)
-
 
 def _text_font(px):
     font = ImageFont.truetype(FONT, px)
