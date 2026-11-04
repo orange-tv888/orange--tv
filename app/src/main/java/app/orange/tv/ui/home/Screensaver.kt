@@ -525,6 +525,17 @@ private fun FilmSaver(
                     attempt++
                     return
                 }
+                // The film is not there at this quality at all (404): one step down is a film that
+                // plays, and retrying it or moving to the next one is not — every film is missing at
+                // that quality, so the walk went round the whole set and ended on the black veil.
+                if (quality != FilmQuality.Hd && error.errorCode == PlaybackException.ERROR_CODE_IO_BAD_HTTP_STATUS) {
+                    filmQualityCap = FilmFormats.lower(quality)
+                    quality = FilmFormats.lower(quality)
+                    DiagLog.i("film is 404 at this quality; ${quality.key} instead")
+                    load(player.currentMediaItemIndex, if (player.currentMediaItemIndex == 0) firstAtMs else 0L)
+                    attempt++
+                    return
+                }
                 // The decoder could not play this quality: the same film one step lower.
                 if (quality != FilmQuality.Hd && error.errorCode in DECODER_ERRORS) {
                     filmQualityCap = FilmFormats.lower(quality)

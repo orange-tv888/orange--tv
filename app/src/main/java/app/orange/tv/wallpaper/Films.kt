@@ -57,10 +57,25 @@ enum class FilmQuality(val key: String) {
  * on, and decoded by anything else they come out green and purple.
  */
 object FilmFormats {
+    /**
+     * Whether Apple still serves the higher-rate files. It does not: checked on 2026-11-04, every
+     * address under `/Films/2x/` in assets/films.json — 4K SDR, 4K Dolby Vision and 1080p HEVC —
+     * answers 404, while the 2K AVC file of the same film (`/Videos/…_2K_AVC.mov`) still answers
+     * 200 with its 275 MB. Asking for one of the 404s left the screensaver on its black veil and
+     * the aerial wallpaper still on its picture: the player retried, moved to the next film, which
+     * was 404 too, round the set until it gave up. A TV that can decode 4K is therefore given
+     * 1080p — the same film, at 10 Mbps — and Personalize offers no quality choice, having none.
+     *
+     * [probe] is left as it was, and is what to use again the day Apple puts the files back:
+     * set this to true, and everything above it follows.
+     */
+    private const val HIGHER_RATES_SERVED = false
+
     @Volatile
     private var probed: Set<FilmQuality>? = null
 
-    fun supported(context: Context): Set<FilmQuality> = probed ?: probe(context).also { probed = it }
+    fun supported(context: Context): Set<FilmQuality> =
+        if (!HIGHER_RATES_SERVED) setOf(FilmQuality.Hd) else probed ?: probe(context).also { probed = it }
 
     /** [chosen], or for Auto the best supported; a choice the TV cannot play falls back too. */
     fun resolve(context: Context, chosen: FilmQuality): FilmQuality {
