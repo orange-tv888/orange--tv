@@ -130,7 +130,6 @@ restart_aerial() {
 # Grants that only ADB can give; Aerial never asks for them on screen. Again on repair: an APK
 # installed without this script has none of them, and Home Guard never came on (issue #853).
 grant() {
-  adb shell pm grant "$PKG" android.permission.ACCESS_FINE_LOCATION 2>/dev/null || true   # Wi-Fi name
   adb shell pm grant "$PKG" android.permission.WRITE_SECURE_SETTINGS 2>/dev/null || true  # keep Home Guard (and ADB) on
   adb shell appops set "$PKG" SYSTEM_ALERT_WINDOW allow 2>/dev/null || true             # open Aerial after boot
   adb shell appops set "$PKG" WRITE_SETTINGS allow 2>/dev/null || true                  # brightness

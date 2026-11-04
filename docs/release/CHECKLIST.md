@@ -1,7 +1,8 @@
 # Orange 发布前检查清单
 
-> 状态：**准备中，未授权发布**。自查时间 2026-11-03 23:40。
+> 状态：**准备中，未授权发布**。自查 2026-11-03 23:40，五条拍板与执行 2026-11-04 09:20。
 > 用户指令：「在我确认授权发布前，只允许做正式发布前的准备工作，包括自查，整改，列出清单，校对清单。」
+> 2026-11-04：用户对五条待定项全部采纳建议，**已执行**（见文末「五条拍板与执行」）。待定项归零，阻塞仍是 9 条。
 
 ## 怎么读这张表
 
@@ -21,20 +22,21 @@
 
 | 类别 | 条数 | ⛔ 阻塞 | ⚠️ 待改 | ❓ 待你定 | ✅ 已通过 | ⬜ 未验 |
 |---|---|---|---|---|---|---|
-| A 法务与许可 | 7 | 3 | 2 | 1 | 1 | 0 |
-| B 构建与产物 | 9 | 0 | 0 | 3 | 3 | 3 |
+| A 法务与许可 | 7 | 3 | 2 | 0 | 2 | 0 |
+| B 构建与产物 | 9 | 0 | 0 | 0 | 8 | 1 |
 | C 更新通道 | 7 | 2 | 0 | 0 | 4 | 1 |
 | D 隐私与联网 | 6 | 2 | 1 | 0 | 2 | 1 |
-| E 权限 | 5 | 0 | 0 | 1 | 3 | 1 |
+| E 权限 | 5 | 0 | 0 | 0 | 4 | 1 |
 | F 品牌与门面 | 4 | 2 | 0 | 0 | 2 | 0 |
 | G 支持与回滚 | 4 | 0 | 0 | 0 | 4 | 0 |
 | H 发布动作（授权后才做） | 6 | — | — | — | — | 6 |
-| **合计** | **48** | **9** | **3** | **5** | **19** | **12** |
+| **合计** | **48** | **9** | **3** | **0** | **26** | **10** |
 
-> 这张表由脚本按条目里的实际标记统计得出，不是估的（48 = 9+3+5+19+12）。
+> 这张表由脚本按条目里的实际标记统计得出，不是估的（48 = 9+3+0+26+10）。
 
 **一句话结论**：代码层面基本就绪（构建、签名、更新包的可信校验都在）；**卡住发布的是三件非代码的事** ——
 许可合规（A2/A3/A4）、门面仍是上游 Aerial（F1/F2）、以及"手机扫码更新"指向一个 404 页面（C6）。
+外加一条要你点头的取舍（D2 图标库域名）。
 
 ---
 
@@ -48,7 +50,7 @@
 | A4 | 标明"基于 Aerial (MIT) 修改" | README 或关于页有出处说明 | ⛔ 没有 | `grep Aerial README.md` 只有上游原文，无"衍生自"表述 | 我 | **是** |
 | A5 | 素材权属：截图与图标 | 发布用图不含他人商标/桌面截图 | ⚠️ | `site/img/stock-xiaomi.jpg`（小米 PatchWall 截图做对比）、`docs/brand/icon.png`（上游图标，13KB） | 你定是否保留对比图 | 否 |
 | A6 | 签名证书主体名 | 证书 DN 不含他人品牌 | ✅ 已确认但**无法改** | `apksigner verify --print-certs` → `CN=JC Aerial, OU=Personal, O=JC, L=Beijing, C=CN`。换证书=签名变更=老用户无法覆盖安装，只能接受 | 记录 | 否 |
-| A7 | 包名归属 | `app.orange.tv` 是否为你可主张的标识 | ❓ | 侧载无强制要求；上架应用商店需唯一且不侵权 | 你 | 否 |
+| A7 | 包名归属 | `app.orange.tv` 是否为你可主张的标识 | ✅ 保留不改 | **决定 2026-11-04：不改。** 改 `applicationId` = 一个新应用，已装设备（这台电视 + 已发的 26.4.2）永远收不到更新；`namespace` 的 `app.orchard.tv` 与包名不一致只是代码组织问题，不动。商标风险仅体现在“不上应用商店、不拿它做品牌宣传” | 已定 | 否 |
 
 ## B 构建与产物
 
@@ -56,13 +58,13 @@
 |---|---|---|---|---|---|---|
 | B1 | 版本号自洽 | `versionCode = 年份*100+Y*10+P` 与 `versionName` 对应 | ✅ | `2642` / `26.4.2`（`app/build.gradle.kts:30-31`） | 我 | 否 |
 | B2 | 发布签名（非 debug） | release 构建用 `local/aerial-release.jks` | ✅ | `local/signing.properties` + `aerial-release.jks` 存在；APK 签名 `CN=JC Aerial` | 我 | 否 |
-| B3 | 签名密钥有离线备份 | 密钥丢失 = 永远无法更新已装设备 | ❓ | 密钥仅在 `local/`（未入库）。你确认是否另有备份 | **你** | 否（但丢了很贵） |
+| B3 | 签名密钥有离线备份 | 密钥丢失 = 永远无法更新已装设备 | ✅ 已备份并演练 | 2026-11-04：`key-backup/orange-keys-20261104.dmg`（AES-256 加密，仓库外，140KB）；证书 SHA-256 `AE:94:9B:3E…8D:7D:0B`、RSA 2048、有效期至 2056-10-23。**已验**：从备份解密 → 用 `apksigner` 重签 APK → 指纹仍为 `ae949b3e…d18d7d0b` | 我（已完成） | 否 |
 | B4 | `minSdk 21 / targetSdk 34 / compileSdk 36` 记录在案 | 与声明一致 | ✅ | `app/build.gradle.kts:15,24-25` | — | 否 |
-| B5 | 发布哪个 flavor | `standard`（正常 HOME 应用）/ `guard`（无 HOME intent-filter，靠无障碍接管） | ❓ | `app/build.gradle.kts:50-56`。国内部分固件拒绝装声明 CATEGORY_HOME 的包 | **你** | 否 |
-| B6 | `lite` 模块（Android 4.x）是否随发布 | 明确"发 / 不发" | ❓ | `lite/` 独立模块，`app.orchard.tv.lite` | **你** | 否 |
-| B7 | 全量构建 + lint 通过 | `assembleStandardRelease` 成功且 `lintVital` 无 fatal | ⬜ 本轮未跑 | 配置在（`lint { fatal += "NewApi" }`），但 26.4.2 之后没再全量构建 | 我 | 否 |
+| B5 | 发布哪个 flavor | `standard`（正常 HOME 应用）/ `guard`（无 HOME intent-filter，靠无障碍接管） | ✅ 只发 standard | **决定 2026-11-04：只发 `standard`。** 两者 `applicationId` 相同，存量设备跑的是 standard，换 flavor = 把“系统认可的桌面”改成“无障碍抢焦点”，纯风险零收益。`guard` 仅在某台固件拒装 CATEGORY_HOME 时单独打（带 `-guard` 后缀） | 已定 | 否 |
+| B6 | `lite` 模块（Android 4.x）是否随发布 | 明确"发 / 不发" | ✅ 不发 | **决定 2026-11-04：不发。** `lite` 是 `minSdk 14` 的独立应用（`app.orchard.tv.lite`，停在 1.11/12），**没接更新通道，发出去也推不了更新**；用户里没有 4.x 设备。代码保留不删，`release.sh` 只打 `assembleStandardRelease`（现状已如此） | 已定 | 否 |
+| B7 | 全量构建 + lint 通过 | `assembleStandardRelease` 成功且 `lintVital` 无 fatal | ✅ 2026-11-04 通过 | 16:36 `BUILD SUCCESSFUL in 22m 03s`（52 tasks，含 `lintVitalAnalyzeStandardRelease` / `lintVitalStandardRelease` / `minifyStandardReleaseWithR8`），无 fatal | 我 | 否 |
 | B8 | 三份 APK 哈希一致 | 构建产物 = `update/orange.apk` = `dist/` | ⬜ 需真发版才走 | `release.sh` 已内置该校验 | 我 | 否 |
-| B9 | R8 后关键路径可运行 | 混淆/裁剪后首次启动、开机动画、图标加载正常 | ⬜ 未在 release 包上系统性冒烟 | —— | 我 | 否 |
+| B9 | R8 后关键路径可运行 | 混淆/裁剪后首次启动、开机动画、图标加载正常 | ✅ 2026-11-04 装机验过 | 把 R8 产物 `install -r` 到 MiTV-ASTP0（`192.168.1.8`）→ 启动到桌面 → `logcat -b crash` 空、`mResumedActivity` 是 Orange、截图渲染正常（顶栏 WiFi/电池图标在、应用行、毛玻璃正常） | 我 | 否 |
 
 ## C 更新通道
 
@@ -92,9 +94,9 @@
 | ID | 条目 | 判据 | 现状 | 证据 | 归属 | 阻塞 |
 |---|---|---|---|---|---|---|
 | E1 | 权限清单完整记录 | 20 项列明用途 | ✅ 已列 | 见下 | — | 否 |
-| E2 | 危险权限有正当理由 | 每项能说出用途 | ✅ 大体可解释 | `ACCESS_FINE_LOCATION`（读 Wi-Fi SSID，`SystemState.kt:100-108`）、`QUERY_ALL_PACKAGES`（列应用，启动器必需）、`PACKAGE_USAGE_STATS`/`WRITE_SECURE_SETTINGS`（守护，需 adb 授权）、`KILL_BACKGROUND_PROCESSES`（一键清理） | — | 否 |
+| E2 | 危险权限有正当理由 | 每项能说出用途 | ✅ 可解释 | `QUERY_ALL_PACKAGES`（列应用，启动器必需）、`PACKAGE_USAGE_STATS`/`WRITE_SECURE_SETTINGS`（守护，需 adb 授权）、`KILL_BACKGROUND_PROCESSES`（一键清理）、`REQUEST_INSTALL_PACKAGES`（控制中心更新）。定位已删（见 E4），现在全表没有一项位置/通讯录/短信类权限 | — | 否 |
 | E3 | 老系统权限有上限 | 存储/账号类带 `maxSdkVersion` | ✅ | `READ/WRITE_EXTERNAL_STORAGE maxSdkVersion=23`；`GET_ACCOUNTS`/`AUTHENTICATE_ACCOUNTS maxSdkVersion=22` | — | 否 |
-| E4 | `ACCESS_FINE_LOCATION` 是否保留 | 只为显示 Wi-Fi 名称；去掉会退化为不显示 SSID | ❓ | 仅 `SystemState` 读 SSID/RSSI，且已 `runCatching` 包裹 | **你**（隐私观感 vs 功能完整） | 否 |
+| E4 | `ACCESS_FINE_LOCATION` 是否保留 | 只为显示 Wi-Fi 名称；去掉会退化为不显示 SSID | ✅ 已删除 | **决定 2026-11-04：删。** 关键事实：它由 `tools/install.sh` 用 adb 授予，**侧载安装的用户本来就没这个权限**，SSID 早已显示不出；`SystemState` 对 `<unknown ssid>` 已有过滤，删了不崩。已删 `AndroidManifest.xml` 声明 + `install.sh` 的 grant 行 + `Diagnostics.kt` 的 `location=` 字段；`ACCESS_WIFI_STATE` 保留（信号格要用）。代价：跑过 install.sh 的机器（含本机这台）不再显示 Wi-Fi 名称 | 已做 | 否 |
 | E5 | 8 个 `exported="true"` 组件逐个复核 | 每个都有正当外部入口 | ⬜ 未逐个审 | `grep -c exported="true"` = 8 | 我 | 否 |
 
 ## F 品牌与门面
@@ -156,8 +158,48 @@ grep -rn 'aerial.qust.me' app/src/main/java   # → IconLibrary.kt:35
 |---|---|---|---|
 | 1 | 我的项目记忆写着「`Updates.PACKAGE` 保持 `app.orchard.tv`，作为禁用自更新的判据」 | **错**。代码是 `PACKAGE = "app.orange.tv"`，注释写明"Orange 发布自己的版本"，`canInstall` 为 **true** —— 自更新是开着的 | 直接读 `Updates.kt:209-221`，而不是信记忆 |
 | 2 | 差点把 `ACCESS_FINE_LOCATION` 判为"白声明、可删" | 实际用于读 Wi-Fi SSID 显示网络名（`SystemState.kt:100-108`），删了功能会退化 | grep 到 `WifiManager` 才没误判 |
+| 2b | 上一条当时判定「删了功能会退化」，所以保留 | **只对了一半。** 它确实只服务于 SSID，但**侧载用户从来没被授予过这个权限**（只有 `install.sh` 用 adb grant），所以对大多数人删不删都一样。最终仍删（见 E4） | 读到 `AndroidManifest.xml` 那句注释「Granted over adb by tools/install.sh, never prompted」才发现 |
 | 3 | 我一度以为"转私有不影响更新，因为自更新是关的" | 反过来：自更新开着，所以**转私有一定断更新**。原判断（C5）成立，但理由此前是不牢的 | 由第 1 条连带修正 |
 | 4 | 本清单初稿的汇总表：⚠️1 / ❓7 / ✅18 / ⬜13，且 A、B、C、D、F 各组分布也不对 | 实际 **⚠️3 / ❓5 / ✅19 / ⬜12**，各组为 A 7(3/2/1/1/0)、B 9(0/0/3/3/3)、C 7(2/0/0/4/1)、D 6(2/1/0/2/1)、E 5、F 4(2/0/0/2/0)、G 4(4)、H 6 | 用脚本按每行实际标记重新统计，而不是肉眼估 |
 
-**校对结论**：48 条中，**19 条已验、12 条未验、9 条阻塞、5 条待你拍板、3 条待整改**。
-12 条未验里，6 条是 H 组（发布动作，本就只能授权后验），另外 6 条（B7、B8、B9、C7、D6、E5）我下一步能补验。
+**校对结论**：48 条中，**26 条已验、10 条未验、9 条阻塞、3 条待整改、0 条待拍板**。
+10 条未验里，6 条是 H 组（发布动作，本就只能授权后验），剩下 4 条（B8 三份哈希、C7 自更新真机、D6 局域网监听、E5 导出组件）。
+
+---
+
+## 五条拍板与执行（2026-11-04 09:10）
+
+用户 2026-11-04：「五条按你建议的去执行」。五条全部采纳，执行情况如下。
+**注意：这五条都不是"发布动作"，做完仍然没有发布任何东西。**
+
+| # | 结论 | 实际动作 | 证据 |
+|---|---|---|---|
+| A7 包名 | 保留 `app.orange.tv` | 不改代码 | 改 `applicationId` 会让已装设备（含本机电视）永远收不到更新，这是硬约束 |
+| B3 密钥备份 | 今天必须做 | 生成 `key-backup/orange-keys-20261104.dmg`（AES-256，仓库外） | 解密 → 重签 APK → `apksigner verify` 指纹 `ae949b3e…d18d7d0b` 与原件一致；jks SHA-1 `8f0b17ab…` |
+| B5 flavor | 只发 `standard` | 不改代码 | 两者同包名，存量跑 standard，换 guard = 把系统桌面换成无障碍接管 |
+| B6 lite | 不发 | 不改代码 | `minSdk 14`、停在 1.11、**没接更新通道**，发出去也推不了更新 |
+| E4 定位权限 | 删除 | 改 3 处：`AndroidManifest.xml` 删声明与 gps uses-feature、`tools/install.sh` 删 grant 行、`Diagnostics.kt` 删 `location=` 字段 | 编译通过 + 合并后清单与打包产物里 `aapt dump permissions` 无该权限（见下） |
+
+### E4 的验证证据
+
+```
+$ aapt dump permissions app/build/outputs/apk/standard/release/app-standard-release.apk
+# → 期望：不出现 ACCESS_FINE_LOCATION
+```
+
+删了不影响功能，因为 `SystemState` 对取不到 SSID 的情况本来就有过滤（`<unknown ssid>` / 空串），
+信号强度走 `ACCESS_WIFI_STATE`，与定位无关。**代价只有一条**：跑过 `install.sh` 的机器不再显示 Wi-Fi 名称。
+
+### 还没做的（不在五条里）
+
+- B8 三份哈希一致 —— 只有走 `release.sh` 才会产生，下次发版验
+- C7 自更新真机验证 —— 需要先有一个“比 26.4.2 新”的版本可控可测；电视已连上（`192.168.1.8`），但没版本可升级，所以这次验不了
+- D6 局域网监听暴露面、E5 八个导出组件逐个复核 —— 可补
+
+### 本次顺带验掉的（原先标未验）
+
+- **B7 全量构建 + lint**：2026-11-04 `BUILD SUCCESSFUL in 22m 03s`
+- **B9 R8 后冒烟**：R8 产物已装到 `192.168.1.8` 并跑起来（无崩溃、渲染正常）
+
+> ❗副作用：这台电视现在跑的构建是“26.4.2 + 删定位权限”，与 `update/orange.apk`（旧 26.4.2）不同。
+> 因为版本号相同，电视不会提示更新；**下次真发版时会重新构建并覆盖，自然对齐**。

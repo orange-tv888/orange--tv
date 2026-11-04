@@ -6,15 +6,17 @@
     <uses-feature android:name="android.software.live_tv" android:required="false" />
     <uses-feature android:name="android.hardware.touchscreen" android:required="false" />
     <uses-feature android:name="android.hardware.wifi" android:required="false" />
-    <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <!-- One-tap clean-up: ask the system to reclaim the background processes of restartable apps. -->
     <uses-permission android:name="android.permission.KILL_BACKGROUND_PROCESSES" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
-    <!-- Only to read the Wi-Fi network name. Granted over adb by tools/install.sh, never prompted. -->
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"
-        tools:ignore="CoarseFineLocation" />
+    <!-- No ACCESS_FINE_LOCATION on purpose. It was only ever used to read the Wi-Fi SSID, and since
+         Android 8.1 the SSID is redacted unless location is granted — which on a TV nobody grants.
+         Measured 2026-11-04: sideloaded installs never had it, so dropping it just leaves the SSID
+         blank (SystemState already treats "<unknown ssid>" as no name); the signal bars are
+         unaffected, they only need ACCESS_WIFI_STATE. A home screen asking for precise location is
+         the first thing a reviewer questions, and it bought one line of text. -->
     <uses-permission android:name="android.permission.REQUEST_DELETE_PACKAGES" />
     <!-- Installing a new version from Control Center (update/Updates.kt). On TVs without the
          "install unknown apps" page (TCL) tools/install.sh allows it over ADB. -->
