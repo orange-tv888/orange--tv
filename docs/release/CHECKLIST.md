@@ -4,6 +4,11 @@
 > 用户指令：「在我确认授权发布前，只允许做正式发布前的准备工作，包括自查，整改，列出清单，校对清单。」
 > 2026-11-04 11:20：**品牌归位与许可补齐完成**（`26.5.0-rebrand`）—— A2/A3/A4 补齐、F1/F2 改完、D2 关掉上游图标库、
 > D5 隐私说明落地、C6 二维码改指仓库。⛔ 由 9 条降到 1 条（只剩 C5 这个机制约束），✅ 由 26 升到 35。
+> 2026-11-04 21:00：**按 26.5.1 实况复核一遍**（清单此前还停在 26.4.2）。补验 B8 三份哈希、C3 四个取源；
+> 把一直挂着的 D6（局域网监听）与 E5（8 个导出组件）逐个审完；审 D6 时**发现 D5 的隐私说明写错了一处**并已改正。
+> 现在 ✅ 40、⬜ 7（其中 6 条是 H 组发布动作）、⚠️0、⛔1。
+> 21:20 又补一轮：官网最后一张带旧品牌的截图换掉（A5/F2 转 ✅）；在电视上实跑了一次「检查更新」，
+> 把 C7 从「完全没验」推进到「检查段已验、下载安装段未验」。
 
 ## 怎么读这张表
 
@@ -23,22 +28,24 @@
 
 | 类别 | 条数 | ⛔ 阻塞 | ⚠️ 待改 | ❓ 待你定 | ✅ 已通过 | ⬜ 未验 |
 |---|---|---|---|---|---|---|
-| A 法务与许可 | 7 | 0 | 1 | 0 | 6 | 0 |
-| B 构建与产物 | 9 | 0 | 0 | 0 | 8 | 1 |
+| A 法务与许可 | 7 | 0 | 0 | 0 | 7 | 0 |
+| B 构建与产物 | 9 | 0 | 0 | 0 | 9 | 0 |
 | C 更新通道 | 7 | 1 | 0 | 0 | 5 | 1 |
-| D 隐私与联网 | 6 | 0 | 0 | 0 | 5 | 1 |
-| E 权限 | 5 | 0 | 0 | 0 | 4 | 1 |
-| F 品牌与门面 | 4 | 0 | 1 | 0 | 3 | 0 |
+| D 隐私与联网 | 6 | 0 | 0 | 0 | 6 | 0 |
+| E 权限 | 5 | 0 | 0 | 0 | 5 | 0 |
+| F 品牌与门面 | 4 | 0 | 0 | 0 | 4 | 0 |
 | G 支持与回滚 | 4 | 0 | 0 | 0 | 4 | 0 |
 | H 发布动作（授权后才做） | 6 | — | — | — | — | 6 |
-| **合计** | **48** | **1** | **2** | **0** | **35** | **10** |
+| **合计** | **48** | **1** | **0** | **0** | **40** | **7** |
 
 > 这张表由脚本按条目里的实际标记统计得出，不是估的（48 = 1+2+0+35+10）。
 
-**一句话结论**：许可合规与品牌门面已做完（A 段 6/7、F 段 3/4），代码层面就绪。
-**剩下的唯一 ⛔ 是 C5**：仓库必须保持公开——这是更新机制的约束，不是待修项，你已知情。
-两条 ⚠️ 分别是 A5（截图待重拍）与 F2（官网截图，不发官网就不阻塞）。
-四条 ⬜ 里 B8 与 C7 这次发版能验掉，D6/E5 是没来得及逐条审的代码复核。
+**一句话结论（2026-11-04 21:20 复核）**：许可、品牌、构建、签名、更新通道**都已就绪**，代码层面没有已知阻塞，
+**⚠️ 已清零**。**唯一的 ⛔ 仍是 C5**：仓库必须保持公开——这是更新机制的约束，不是待修项，你已知情。
+七条 ⬜ 里 **6 条是 H 组**（发布动作本身，只有真发版才验得到）；
+**功能性未验只剩 C7 一条：自更新从未在 Orange 上真机跑通过。**
+→ 结论：**能发，但发出去之后"用户怎么收到下一版"这条路没被走过一次。**
+上一版是手动 `adb install -r` 装上去的，这恰恰绕开了自更新。
 
 ---
 
@@ -50,7 +57,7 @@
 | A2 | App 内可查开源许可（MIT 要求分发时随附） | 安装后能在设置/关于里看到 MIT 与第三方许可全文 | ✅ 控制中心 → 关于 · 开源许可 | `ControlCenter.AboutPage`；`unzip -l` 见 `assets/licences/{LICENSE.txt,THIRD-PARTY.md,FONT-LICENSE-OFL.txt}`；真机截图 `docs/qa/26.5.0-rebrand.md` | 完成 | 否 |
 | A3 | 第三方组件许可清单齐备 | 有 `THIRD-PARTY.md` 列出 Compose/Media3(Apache-2.0)、nanohttpd(BSD)、zxing(Apache-2.0)、Inter(OFL)、Kotlin 等 | ✅ 仓库根 `THIRD-PARTY.md`，并随包 | 13 条运行期依赖 + 2 条仅测试；由 `app/build.gradle.kts` 的 `copyLicenceAssets` 复制进 assets，改一处即同步 | 完成 | 否 |
 | A4 | 标明"基于 Aerial (MIT) 修改" | README 或关于页有出处说明 | ✅ README「许可」段 + 应用内关于页首段 | `README.md`「**来源**」；`values*/strings.xml` 的 `cc_about_origin`（五语） | 完成 | 否 |
-| A5 | 素材权属：截图与图标 | 发布用图不含他人商标/桌面截图 | ⚠️ 图标与 TV banner 已重绘，官网截图待重拍 | 图标：`ic_launcher_background.xml` 与 `docs/brand/icon.svg` 由绿紫改为橙 `#FFA733→#FF5E1A`，5 个 mipmap PNG 重渲染；TV banner `drawable-{xhdpi,xxhdpi}/banner.png` 原为绿紫渐变 + "Aerial" 字标，已重绘为橙 + "Orange"；**`site/img/control-center.jpg` 里能直接看到 "Aerial 1.65"**，属 F2 待重拍 | 我 | 否 |
+| A5 | 素材权属：截图与图标 | 发布用图不含他人商标/桌面截图 | ✅ 2026-11-04 已换 | 图标：`ic_launcher_background.xml` 与 `docs/brand/icon.svg` 由绿紫改为橙 `#FFA733→#FF5E1A`，5 个 mipmap PNG 重渲染；TV banner `drawable-{xhdpi,xxhdpi}/banner.png` 原为绿紫渐变 + "Aerial" 字标，已重绘为橙 + "Orange"；**`site/img/control-center.jpg` 2026-11-04 已换**：旧图右下角是 `Aerial 1.65` 且带 Netflix 官方 logo，现用 26.5.1 真机截图（1920×1080 → 1600×900）重制，右下角为 `Orange 26.5.1` | 我 | 否 |
 | A6 | 签名证书主体名 | 证书 DN 不含他人品牌 | ✅ 已确认但**无法改** | `apksigner verify --print-certs` → `CN=JC Aerial, OU=Personal, O=JC, L=Beijing, C=CN`。换证书=签名变更=老用户无法覆盖安装，只能接受；证书装完不可见，不构成展示性使用 | 记录 | 否 |
 | A7 | 包名归属 | `applicationId` 与 `namespace` 一致 | ✅ 已统一 | **2026-11-04 改判**：`applicationId` 仍为 `app.orange.tv`（不动，动了就是另一个应用）；`namespace` 由 `app.orchard.tv` 迁到 `app.orange.tv`，109 个源文件与 `app/`、`lite/` 源码树同步移动。组件名变为 `app.orange.tv/app.orange.tv.MainActivity`；签名、覆盖安装、更新通道不受影响 | 完成 | 否 |
 
@@ -58,14 +65,14 @@
 
 | ID | 条目 | 判据 | 现状 | 证据 | 归属 | 阻塞 |
 |---|---|---|---|---|---|---|
-| B1 | 版本号自洽 | `versionCode = 年份*100+Y*10+P` 与 `versionName` 对应 | ✅ | `2642` / `26.4.2`（`app/build.gradle.kts:30-31`） | 我 | 否 |
+| B1 | 版本号自洽 | `versionCode = 年份*100+Y*10+P` 与 `versionName` 对应 | ✅ | `2651` / `26.5.1`（`app/build.gradle.kts:33-34`）。公式 `YEAR*100+MINOR*10+PATCH` = 26×100+5×10+1 | 我 | 否 |
 | B2 | 发布签名（非 debug） | release 构建用 `local/aerial-release.jks` | ✅ | `local/signing.properties` + `aerial-release.jks` 存在；APK 签名 `CN=JC Aerial` | 我 | 否 |
 | B3 | 签名密钥有离线备份 | 密钥丢失 = 永远无法更新已装设备 | ✅ 已备份并演练 | 2026-11-04：`key-backup/orange-keys-20261104.dmg`（AES-256 加密，仓库外，140KB）；证书 SHA-256 `AE:94:9B:3E…8D:7D:0B`、RSA 2048、有效期至 2056-10-23。**已验**：从备份解密 → 用 `apksigner` 重签 APK → 指纹仍为 `ae949b3e…d18d7d0b` | 我（已完成） | 否 |
 | B4 | `minSdk 21 / targetSdk 34 / compileSdk 36` 记录在案 | 与声明一致 | ✅ | `app/build.gradle.kts:15,24-25` | — | 否 |
 | B5 | 发布哪个 flavor | `standard`（正常 HOME 应用）/ `guard`（无 HOME intent-filter，靠无障碍接管） | ✅ 只发 standard | **决定 2026-11-04：只发 `standard`。** 两者 `applicationId` 相同，存量设备跑的是 standard，换 flavor = 把“系统认可的桌面”改成“无障碍抢焦点”，纯风险零收益。`guard` 仅在某台固件拒装 CATEGORY_HOME 时单独打（带 `-guard` 后缀） | 已定 | 否 |
-| B6 | `lite` 模块（Android 4.x）是否随发布 | 明确"发 / 不发" | ✅ 不发 | **决定 2026-11-04：不发。** `lite` 是 `minSdk 14` 的独立应用（`app.orchard.tv.lite`，停在 1.11/12），**没接更新通道，发出去也推不了更新**；用户里没有 4.x 设备。代码保留不删，`release.sh` 只打 `assembleStandardRelease`（现状已如此） | 已定 | 否 |
+| B6 | `lite` 模块（Android 4.x）是否随发布 | 明确"发 / 不发" | ✅ 不发 | **决定 2026-11-04：不发。** `lite` 是 `minSdk 14` 的独立应用（`app.orange.tv.lite`，1.11/12（`versionCode 12`），已随 26.5.0 改名统一），**没接更新通道，发出去也推不了更新**；用户里没有 4.x 设备。代码保留不删，`release.sh` 只打 `assembleStandardRelease`（现状已如此） | 已定 | 否 |
 | B7 | 全量构建 + lint 通过 | `assembleStandardRelease` 成功且 `lintVital` 无 fatal | ✅ 2026-11-04 通过 | 16:36 `BUILD SUCCESSFUL in 22m 03s`（52 tasks，含 `lintVitalAnalyzeStandardRelease` / `lintVitalStandardRelease` / `minifyStandardReleaseWithR8`），无 fatal | 我 | 否 |
-| B8 | 三份 APK 哈希一致 | 构建产物 = `update/orange.apk` = `dist/` | ⬜ 需真发版才走 | `release.sh` 已内置该校验 | 我 | 否 |
+| B8 | 三份 APK 哈希一致 | 构建产物 = `update/orange.apk` = `dist/` | ✅ 26.5.1 实测通过 | 2026-11-04 复核：`update/orange.apk`、`app-standard-release.apk`、`dist/orange-26.5.1.apk` 三者同为 `e1d737ed…cc8c3e`。26.5.0 那次是 `6f8139e8…`，同样三份一致 | 我 | 否 |
 | B9 | R8 后关键路径可运行 | 混淆/裁剪后首次启动、开机动画、图标加载正常 | ✅ 2026-11-04 装机验过 | 把 R8 产物 `install -r` 到 MiTV-ASTP0（`192.168.1.8`）→ 启动到桌面 → `logcat -b crash` 空、`mResumedActivity` 是 Orange、截图渲染正常（顶栏 WiFi/电池图标在、应用行、毛玻璃正常） | 我 | 否 |
 
 ## C 更新通道
@@ -74,11 +81,11 @@
 |---|---|---|---|---|---|---|
 | C1 | 自更新是开着的 | `Updates.canInstall` 返回 true | ✅ | `Updates.kt:215` `PACKAGE = "app.orange.tv"`；`official = APPLICATION_ID == PACKAGE` → true | — | 否 |
 | C2 | 更新包校验防篡改 | 包名 + 签名（`sameSigner`）双重校验 | ✅ | `Updates.kt:221,266`；注释 `UpdateSource.kt:18-19` 明确"篡改的 APK 或劫持的 JSON 装不进来" | — | 否 |
-| C3 | 更新清单与 APK 在仓库里 | `update/version.json`、`update/orange.apk` 存在且版本对得上 | ✅ | `version.json` 写 `26.4.2`；`orange.apk` 3.1M | — | 否 |
+| C3 | 更新清单与 APK 在仓库里 | `update/version.json`、`update/orange.apk` 存在且版本对得上 | ✅ | `version.json` 写 `26.5.1`（2651）；`orange.apk` 与构建产物同哈希 `e1d737ed…`。2026-11-04 实测：raw / ghproxy.net / gh-proxy.com / jsDelivr 四个入口全部 HTTP 200，返回同一份 JSON | — | 否 |
 | C4 | 镜像顺序经过实测 | ghproxy.net 优先，其余兜底 | ✅ | `UpdateSource.kt:41` 两个镜像 + 直连 + jsDelivr，注释说明顺序是量出来的 | — | 否 |
 | C5 | 仓库必须保持公开 | 私有则更新 404 | ⛔ 这是机制约束 | 更新读 `raw.githubusercontent.com/.../main/update/*`；转私有即断 | **你**（知情确认） | **是（约束）** |
 | C6 | "手机扫码更新"的二维码可达 | 扫出来是有效页面 | ✅ 已改指向仓库主页 | 原来指 `releases/latest`，API 实测 **HTTP 404**（Releases 为空）；2026-11-04 改为 `github.com/orange-tv888/orange--tv`，仓库页带安装命令与 APK 路径 | 完成 | 否 |
-| C7 | 自更新在 Orange 上真机跑通过 | 点"检查更新"→下载→安装成功 | ⬜ 未验 | 一直用手动 `adb install -r`，自更新路径未在 Orange 上走过 | 我 | 否 |
+| C7 | 自更新在 Orange 上真机跑通过 | 点"检查更新"→下载→安装成功 | ⬜ **检查段已验，下载/安装段未验** | **2026-11-04 21:18 真机实测「检查」这一段通了**：打开控制中心 → `control center started` → 21 秒后 `control center finished: success version=26.5.1`，界面正确显示 `Orange 26.5.1` 且不出现更新条目（因为已是最新）。也就是说「读线上清单 → 解析 → 比版本 → 摆对界面」四步是真的跑过的。<br>**仍没走过的**：`Updates.install` 那条路——拿到更高版本号 → 下载 APK → `PackageInstaller` 会话 → 安装成功。要验必须有「比电视新的版本」，所以只能等下一版（26.5.2）发出去后用电视上的「检查更新」装，不要用 adb | 我 | 否 |
 
 ## D 隐私与联网
 
@@ -88,8 +95,8 @@
 | D2 | 是否向第三方暴露 IP | 有则披露，或去掉 | ✅ 已关掉 | `IconLibrary.ENABLED = false`（26.5.0）。该域名属上游作者，开着会让每台 Orange 的 IP 与安装列表打到别人的服务器。磁贴回退到应用自身图标；将来把 `BASE` 换成自建 CDN 再打开 `ENABLED` 即可 | 完成 | 否 |
 | D3 | `ipinfo.io` 获取公网 IP 用于天气定位 | 有则写进隐私说明 | ✅ 已披露 | `docs/PRIVACY.md` 第二节：目标域、发出什么、何时、能否关；并说明只到城市级、坐标只存本机 | 完成 | 否 |
 | D4 | 无统计/无广告/无账号 | 依赖与代码里无 SDK | ✅ | `app/build.gradle.kts:105-127` 无统计类依赖；全量 URL grep 无上报端点 | — | 否 |
-| D5 | 隐私说明文档 | 存在且与实际行为一致 | ✅ `docs/PRIVACY.md` | 六节：不收集什么、联网逐条、数据存哪、权限用途、第三方、改动方式；按 `26.5.0` 核对 | 完成 | 否 |
-| D6 | 局域网手机配网监听的暴露面 | 仅局域网、可关闭、有鉴权或一次性 | ⬜ 未审 | `PhoneServer`（nanohttpd 2.3.1）；隐私说明已写明「只在你自己的局域网内、不经过互联网、不打开就不启动」，代码层未逐个审 | 我 | 否 |
+| D5 | 隐私说明文档 | 存在且与实际行为一致 | ✅ 2026-11-04 复核并改正一处 | 六节齐全。**当天审 D6 时发现表格写错**：原文说手机整理页「打开「用手机整理」时」才启动、「不打开就不启动」，而代码是 `MainActivity.startWork` 里就 `PhoneServer.listen`——**桌面一启动就在听**。已按实际改为「桌面运行期间一直在听（开机解锁后就起）」，并补上「必须带 8 位随机口令，不带口令一律 404」 | 完成 | 否 |
+| D6 | 局域网手机配网监听的暴露面 | 仅局域网、可关闭、有鉴权或一次性 | ✅ 2026-11-04 已逐条审 | `wallpaper/PhoneServer.kt`：`NanoHTTPD(8790)` 绑本机所有接口，**只监听、不向外发起任何请求**；每个请求先比对 `/${token}` 前缀，不符直接 404，口令是 `SecureRandom` 取的 8 位（字母表 31 字符，约 2^39），持久化在 `phone_page` prefs，只显示在电视的二维码与地址里。**没有「不打开就不启动」这回事**（见 D5），所以已如实写进隐私说明。结论：可达范围限局域网、需口令、不联网外发；剩下的是「看电视的人都知道口令」这个物理前提 | 完成 | 否 |
 
 ## E 权限
 
@@ -99,14 +106,14 @@
 | E2 | 危险权限有正当理由 | 每项能说出用途 | ✅ 可解释 | `QUERY_ALL_PACKAGES`（列应用，启动器必需）、`PACKAGE_USAGE_STATS`/`WRITE_SECURE_SETTINGS`（守护，需 adb 授权）、`KILL_BACKGROUND_PROCESSES`（一键清理）、`REQUEST_INSTALL_PACKAGES`（控制中心更新）。定位已删（见 E4），现在全表没有一项位置/通讯录/短信类权限 | — | 否 |
 | E3 | 老系统权限有上限 | 存储/账号类带 `maxSdkVersion` | ✅ | `READ/WRITE_EXTERNAL_STORAGE maxSdkVersion=23`；`GET_ACCOUNTS`/`AUTHENTICATE_ACCOUNTS maxSdkVersion=22` | — | 否 |
 | E4 | `ACCESS_FINE_LOCATION` 是否保留 | 只为显示 Wi-Fi 名称；去掉会退化为不显示 SSID | ✅ 已删除 | **决定 2026-11-04：删。** 关键事实：它由 `tools/install.sh` 用 adb 授予，**侧载安装的用户本来就没这个权限**，SSID 早已显示不出；`SystemState` 对 `<unknown ssid>` 已有过滤，删了不崩。已删 `AndroidManifest.xml` 声明 + `install.sh` 的 grant 行 + `Diagnostics.kt` 的 `location=` 字段；`ACCESS_WIFI_STATE` 保留（信号格要用）。代价：跑过 install.sh 的机器（含本机这台）不再显示 Wi-Fi 名称 | 已做 | 否 |
-| E5 | 8 个 `exported="true"` 组件逐个复核 | 每个都有正当外部入口 | ⬜ 未逐个审 | `grep -c exported="true"` = 8 | 我 | 否 |
+| E5 | 8 个 `exported="true"` 组件逐个复核 | 每个都有正当外部入口 | ✅ 2026-11-04 逐个审完，7 个有保护、1 个低风险 | ①`MainActivity`（LAUNCHER/LEANBACK，本就是给人点的）②`BootReceiver`（BOOT_COMPLETED，受保护广播）③`OrangeDream`（`BIND_DREAM_SERVICE`）④`ConfigReceiver`（`WRITE_SECURE_SETTINGS`，signature 级）⑤`RevivalListener`（`BIND_NOTIFICATION_LISTENER_SERVICE`）⑥`HomeGuardService`（`BIND_ACCESSIBILITY_SERVICE`）⑦`RevivalAccountService`（manifest 无 permission，但 `AbstractAccountAuthenticator` 内部 `checkBinderPermission` 要求 `ACCOUNT_MANAGER`，第三方拿不到）⑧**`RevivalSyncService`：manifest 无 permission，任何应用可 bind 到 `ISyncAdapter` 并触发一次同步**。风险评估：同步动作只是「重新登记自己为默认桌面」，恶意触发也只会让 Orange 更稳，无数据外泄、无提权，故不阻塞；要收紧可在 `onBind` 里比对调用者，但 SyncManager 本身也不带权限声明，改了有把系统 bind 拦掉的风险 | 完成 | 否 |
 
 ## F 品牌与门面
 
 | ID | 条目 | 判据 | 现状 | 证据 | 归属 | 阻塞 |
 |---|---|---|---|---|---|---|
 | F1 | README 描述的是 Orange 而非 Aerial | 标题、简介、下载按钮指向本项目 | ✅ 标题 `# Orange`，下载指向 `update/orange.apk` | 全文 `Aerial` 0 处；上游 `aerial.qust.me` 0 处；下载/安装/反馈入口全部改为本仓库；末尾新增「来源」段履行署名 | 完成 | 否 |
-| F2 | 官网/截图与界面一致 | `site/` 品牌替换，截图重拍 | ⚠️ 品牌已换，截图未重拍 | `site/` 内 `Aerial` 仅剩组件名 `AerialDream`（正确保留）；`aerial.qust.me` 0 处、`pengchujin` 0 处；13 张截图里 `control-center.jpg` 拍到旧版界面右下角的 "Aerial 1.65"，`home.jpg` 等其余图逐张看过、无品牌字样。站点当前不对外发布，故不阻塞 | 我（需真机重拍） | 否 |
+| F2 | 官网/截图与界面一致 | `site/` 品牌替换，截图重拍 | ✅ 2026-11-04 已换 | `site/` 文字层 `Aerial`（`grep` 全站 html/css/js/json）**0 处**；13 张截图里最后一张带旧品牌的 `control-center.jpg` 已用 26.5.1 真机截图重制（1600×900，右下角 `Orange 26.5.1`），并顺带换掉了旧图里的 NETFLIX 官方 logo。`home.jpg` 等其余 12 张仍无品牌字样。**注意**：`screensaver-aerial*.jpg` 是英文「航拍」的意思（Apple 航拍屏保），不是旧品牌，保留 | 完成 | 否 |
 | F3 | 应用名与图标 | `app_name=Orange`，图标为自有 | ✅ 名称已换，图标已改橙 | `strings.xml:3` `Orange`；图标渐变改 `#FFA733→#FF5E1A`，见 A5 | 完成 | 否 |
 | F4 | 更新说明模板 | 三条以内、说人话、不含内部术语 | ✅ | `26.4.2` 的 `version.json` 三条即为范例 | — | 否 |
 

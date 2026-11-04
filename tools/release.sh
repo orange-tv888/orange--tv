@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
-# 发布一个新版本：体检 → 改版本号 → 打包 → 写版本说明 → 提交 → 推送 → 发 Release。
+# 发布一个新版本：体检 → 改版本号 → 打包 → 写版本说明 → 提交 → 推送。
 #
 #   ./tools/release.sh 26.4.2 "说明一" "说明二"
 #   ./tools/release.sh --check 26.4.2      # 只体检：不编译、不提交、不推送、不改任何文件
+#
+# 默认**不建 GitHub Release**：分发口径是不对外发布，更新走 raw.githubusercontent.com。
+# 万一哪天真要一个公开下载页，加 --release。
 #
 # 第一个参数是版本号，后面每一条是一条更新说明（最多四条，电视上一条一行）。
 # 版本号规则：26.Y 或 26.Y.P；versionCode = 年份×100 + Y×10 + P，所以 26.4.2 = 2642。
@@ -22,8 +25,15 @@ note() { printf "\033[90m· %s\033[0m\n" "$*"; }
 
 # ---- 0. 参数 ----
 CHECK=0
-if [ "${1:-}" = "--check" ]; then CHECK=1; shift; fi
-[ $# -ge 1 ] || die "用法：./tools/release.sh [--check] <版本号> [更新说明…]"
+MAKE_RELEASE=0
+while [ $# -gt 0 ]; do
+    case "$1" in
+        --check)   CHECK=1; shift ;;
+        --release) MAKE_RELEASE=1; shift ;;
+        *) break ;;
+    esac
+done
+[ $# -ge 1 ] || die "用法：./tools/release.sh [--check] [--release] <版本号> [更新说明…]"
 
 VER=$1; shift
 NOTES=("$@")
@@ -203,8 +213,13 @@ git update-ref refs/remotes/origin/main HEAD 2>/dev/null || true
 COMMIT=$(git rev-parse --short HEAD)
 note "已推送 $COMMIT"
 
-# ---- 11. 发 Release ----
-if command -v gh >/dev/null 2>&1; then
+# ---- 11. Release 页面（默认跳过）----
+# 2026-11-04 的口径是「不对外发布，但更新照常」：更新读仓库里的 update/version.json + orange.apk，
+# 不需要 Release 页面。而建 Release 会在仓库首页挂一个公开下载入口，正好是不要的那件事。
+# 这一步保留下来、默认关掉，是为了将来真要建时不必改脚本 —— 那时加 --release。
+if [ "$MAKE_RELEASE" != 1 ]; then
+    note "跳过建 Release（分发口径：不对外发布；要建加 --release）"
+elif command -v gh >/dev/null 2>&1; then
     gh release create "v$VER" "dist/orange-$VER.apk#orange.apk" \
         --title "Orange $VER" \
         --notes "$(printf '%s\n' "${NOTES[@]:-}")" >/dev/null \
