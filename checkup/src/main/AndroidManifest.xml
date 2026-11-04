@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Deliberately no CATEGORY_HOME here: a new Home candidate can make a TV drop its current
+         default, which is the very problem this tool exists to look at. -->
+    <application
+        android:label="Orange Checkup"
+        android:allowBackup="false"
+        android:hardwareAccelerated="true"
+        android:theme="@android:style/Theme.NoTitleBar">
+
+        <activity
+            android:name=".CheckupActivity"
+            android:exported="true"
+            android:label="Orange Checkup"
+            android:launchMode="singleTask"
+            android:screenOrientation="landscape"
+            android:configChanges="orientation|screenSize|keyboard|keyboardHidden|navigation">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+    </application>
+</manifest>
