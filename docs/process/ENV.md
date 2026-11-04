@@ -41,3 +41,12 @@
 - 抖动：静止连拍 6–10 张，逐像素差应为 0；有差异就做互相关定位位移。
 - 卡顿：`dumpsys gfxinfo <pkg> framestats` 看帧数与超时帧，`PerfMonitor longMsg` 看主线程长任务。
 - 误判提醒：**在 Mac 上测电视的网络会得出完全错误的结论**（Mac 有代理）。网络问题一律在电视上用 `toybox nc -w 6 <host> 443` 测。
+
+## 命令形态的坑（会让人误判"已经成功"）
+
+- **`git push ... | tail -3` 会吃掉退出码**：管道最后一段是 `tail`，`&&` 只看得到它成功，于是 push 失败也被当成功，
+  接着 `git update-ref origin/main HEAD` 还会把本地远端指针改成 HEAD，`git status` 显示"已同步"——全靠假象。
+  实测代价：一次提交显示"已推送"，远端 API 查到的还是上一个 commit。**推送要单独跑、看 `$?`，不要接管道。**
+- 同理 `cmd | tail`／`cmd | head` 都会掩盖中途失败；要看结果就 `cmd > /tmp/out 2>&1; echo $?; tail /tmp/out`。
+- 双引号里再嵌 `"` 写提交信息会被拆词，`-m` 参数悄悄变形（这次 commit 信息丢了两侧的引号）。
+  中文提交信息里别用英文双引号，改用直角引号或去掉。
