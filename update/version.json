@@ -1,9 +1,8 @@
 {
-  "version": "26.5.0",
+  "version": "26.5.1",
   "apk": "https://ghproxy.net/https://raw.githubusercontent.com/orange-tv888/orange--tv/main/update/orange.apk",
   "notes": [
-    "图标换成橙色，界面统一叫 Orange",
-    "控制中心新增「关于」：可查看开源许可与所用组件",
-    "修好扫码更新与安装脚本；不再请求第三方图标服务"
+    "修好航拍画面不动：Apple 撤了 4K 片源，改用 1080p",
+    "屏保遇片源失效自动降清晰度重播，不再空转"
   ]
 }

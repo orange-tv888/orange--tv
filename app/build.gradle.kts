@@ -30,8 +30,8 @@ android {
         // (26.4.2 is the second patch of 26.4); ten patches roll Y up one. Code = YEAR*100 + Y*10 + P,
         // so 26.4.2 is 2642. The official 1.75 / 96 line is archived in dist/official-1.75 and no
         // longer compared against.
-        versionCode = 2650
-        versionName = "26.5.0"
+        versionCode = 2651
+        versionName = "26.5.1"
         // `./gradlew -Pdiag ...`: a build for one reporter's TV whose logcat shows no app lines;
         // see system/DiagLog.kt.
         val diag = project.hasProperty("diag")
