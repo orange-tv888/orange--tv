@@ -17,11 +17,20 @@
 
 ## 电视
 
-- adb：`/Users/jiamingcai/WorkBuddy/2026-10-31-09-27-17/aerial-tv/tools/platform-tools/adb`，设备 `192.168.1.11:5555`（IP 会变，先 `adb connect`）。
+- adb：`/Users/jiamingcai/WorkBuddy/2026-10-31-09-27-17/aerial-tv/tools/platform-tools/adb`，设备 `192.168.1.13:5555`
+  （2026-11-05 实测；IP 会变，连不上先扫网段 `nc -z -G 1 <ip> 5555`，别猜）。
 - 装机必须用 release 包（debug 签名不同，`INSTALL_FAILED_UPDATE_INCOMPATIBLE`；debug 在电视上还会卡）。
 - ★ **别用 `am force-stop` + `am start -S` 测冷启动**：Orange 是 Launcher，force-stop 后系统会自动拉起并播一次动画，再 start 就是第二次启动，中间黑屏会被误判成 bug。
 - ★ **别用 screenrecord 判断渲染**：只有 4.5–15fps，H.264 Baseline 在画面剧变时有宏块伪影。判断渲染一律 `screencap` 无损帧。
 - `am force-stop` 杀不掉 guard 守护，杀进程后 App 会自动回来。
+- **logcat 里可无视的一条**：`I app.orange.tv: Rejecting re-init on previously-failed class X.b:
+  NoClassDefFoundError: Failed resolution of: Landroid/view/HardwareCanvas;`，随后一长串 Compose 栈
+  （`AndroidGraphicsContext.b()` ← Home 的 measure/draw）。`X.b` 是 Compose 1.9.5 的
+  `PlaceholderHardwareCanvas`，父类 `android.view.HardwareCanvas` 是框架 @hide 类、Android 9 上不存在，
+  Compose 只用它兼容 Android 5.x（`if (SDK_INT < 23)` 分支）。这条是**被吞掉的**类初始化失败：
+  crash buffer 空、无 E 级日志、焦点框与阴影都正常渲染，量级是"每新建一个 layer 一条"（快速连按 6 格
+  出 6 条，慢按/复用 layer 出 0 条）。**不要为它改代码**；上游见 Google issue 420462749，
+  Lollipop 上会真崩，但那是因为 R8 把 `drawRenderNode`/`isHardwareAccelerated` 改名，我们这份产物两个方法名完好。
 
 ## 推送与发版
 
