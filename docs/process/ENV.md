@@ -17,8 +17,9 @@
 
 ## 电视
 
-- adb：`/Users/jiamingcai/WorkBuddy/2026-10-31-09-27-17/aerial-tv/tools/platform-tools/adb`，设备 `192.168.1.13:5555`
-  （2026-11-05 实测；IP 会变，连不上先扫网段 `nc -z -G 1 <ip> 5555`，别猜）。
+- adb：`/Users/jiamingcai/WorkBuddy/2026-10-31-09-27-17/aerial-tv/tools/platform-tools/adb`，设备 `192.168.1.10:5555`
+  （2026-11-06 实测；IP 一天内换过 .8→.11→.13→.10，连不上就扫网段
+  `for i in $(seq 2 254); do (nc -z -G 1 192.168.1.$i 5555 && echo OPEN 192.168.1.$i) & done; wait`，别猜）。
 - 装机必须用 release 包（debug 签名不同，`INSTALL_FAILED_UPDATE_INCOMPATIBLE`；debug 在电视上还会卡）。
 - ★ **别用 `am force-stop` + `am start -S` 测冷启动**：Orange 是 Launcher，force-stop 后系统会自动拉起并播一次动画，再 start 就是第二次启动，中间黑屏会被误判成 bug。
 - ★ **别用 screenrecord 判断渲染**：只有 4.5–15fps，H.264 Baseline 在画面剧变时有宏块伪影。判断渲染一律 `screencap` 无损帧。
