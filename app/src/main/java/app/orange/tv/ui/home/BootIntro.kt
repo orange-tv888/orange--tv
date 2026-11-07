@@ -35,6 +35,8 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import app.orange.tv.R
+import app.orange.tv.system.DiagLog
+import app.orange.tv.system.Sounds
 import app.orange.tv.ui.theme.LocalReducedMotion
 import kotlin.math.PI
 import kotlin.math.min
@@ -70,6 +72,7 @@ fun BootWordIntro(onFinished: () -> Unit) {
     val finished = rememberUpdatedState(onFinished)
     // No word to show, or motion turned off: nothing to hold the screen for.
     if (sprite == null || sweep == null || LocalReducedMotion.current) {
+        DiagLog.i("bootIntro skip sprite=${sprite != null} sweep=${sweep != null} reduced=${LocalReducedMotion.current}")
         LaunchedEffect(Unit) { finished.value() }
         return
     }
@@ -95,6 +98,10 @@ fun BootWordIntro(onFinished: () -> Unit) {
     }
 
     LaunchedEffect(Unit) {
+        // The chime is loaded as the piece starts and struck when the word lands: it belongs to
+        // this animation, not to the TV switching on and not to Home appearing.
+        Sounds.prepareBoot()
+        var struck = false
         var last = 0L
         while (n < 1f) {
             var step = 0f
@@ -105,6 +112,11 @@ fun BootWordIntro(onFinished: () -> Unit) {
             // A remote that lands early shortens only the tail: the word still settles first, so
             // the piece never reads as a flicker.
             n = (n + step / DUR * if (hurry && n >= 0.62f) 3f else 1f).coerceAtMost(1f)
+            if (!struck && n >= STRIKE_AT) {
+                struck = true
+                DiagLog.i("bootIntro strike n=$n")
+                Sounds.boot()
+            }
         }
         done = true
         finished.value()
@@ -157,6 +169,13 @@ private const val DROP_DIST = 640f
 
 private val LAYER_ALPHA = floatArrayOf(0.86f, 1f)
 private val LAYER_TILT = floatArrayOf(2.6f, -2.0f)
+
+/**
+ * When the chime is struck: the lower sheet has just landed and the word is whole, so the sound
+ * reads as the word hitting the screen rather than as the app opening. 0.43 of 3.6 s is about
+ * 1.5 s in, and the sample is loaded by then.
+ */
+private const val STRIKE_AT = 0.43f
 
 /** The sheet underneath: the same glass at 70% brightness, so the second one reads as lighting it. */
 private val DIM = ColorFilter.colorMatrix(ColorMatrix().apply { setToScale(0.70f, 0.70f, 0.70f, 1f) })
@@ -263,9 +282,17 @@ object BootIntro {
     }
 
     fun claim(): Boolean {
-        if (played || startedAt == 0L) return false
-        if (SystemClock.uptimeMillis() - startedAt > WINDOW_MS) return false
+        if (played || startedAt == 0L) {
+            DiagLog.i("bootIntro claim=false played=$played started=${startedAt != 0L}")
+            return false
+        }
+        val age = SystemClock.uptimeMillis() - startedAt
+        if (age > WINDOW_MS) {
+            DiagLog.i("bootIntro claim=false age=$age")
+            return false
+        }
         played = true
+        DiagLog.i("bootIntro claim=true age=$age")
         return true
     }
 }

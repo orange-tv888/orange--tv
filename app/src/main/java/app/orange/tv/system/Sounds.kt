@@ -35,6 +35,8 @@ object Sounds {
     private var limit = 0
     private var bootPool: SoundPool? = null
     private var boot = 0
+    private var bootReady = false
+    private var bootWanted = false
     private var lastDpadAt = 0L
     private var lastMove = AudioManager.FX_FOCUS_NAVIGATION_DOWN
     private var tickedFor = -1L
@@ -102,22 +104,31 @@ object Sounds {
     fun select() = play(AudioManager.FX_KEY_CLICK, Kind.Select)
 
     /**
-     * The start-up chime, once, when Orange comes up with the TV.
+     * The start-up chime, struck on the frame the word in BootWordIntro lands.
+     *
+     * It belongs to the opening, not to Home appearing and not to the TV switching on: the piece is
+     * shown once per process, and the chime is the half second of it that is heard.
      *
      * It has its own pool: [ownPool] is only filled when the Orange set is chosen, and this sound
-     * is wanted with either set — it is the TV being switched on, not a key press. Off stays off:
-     * a TV whose sounds were turned off should not announce itself either.
-     *
-     * Played only after the sample has loaded (the load is asynchronous and the process is a few
-     * hundred milliseconds old when this is first called), otherwise the chime is silently
-     * dropped on exactly the occasion it exists for.
+     * is wanted with either set — it is the opening, not a key press. Off stays off: a TV whose
+     * sounds were turned off should not announce itself either.
      */
     fun boot() {
         if (OrangeSettings.uiSounds == UiSounds.Off) return
-        bootPool?.let { pool ->
-            if (boot != 0) pool.play(boot, 1f, 1f, 1, 0, 1f)
-            return
-        }
+        prepareBoot()
+        bootWanted = true
+        if (bootReady) strike()
+    }
+
+    /**
+     * Begins loading the chime, so that [boot] can strike it without waiting.
+     *
+     * The load is asynchronous and takes a few hundred milliseconds: called when the opening starts
+     * and struck about a second and a half later, the sample is there by then. Loading at the moment
+     * of the strike would put the sound in the room late, exactly on the one occasion it exists for.
+     */
+    fun prepareBoot() {
+        if (bootPool != null || OrangeSettings.uiSounds == UiSounds.Off) return
         val context = app ?: return
         // USAGE_MEDIA, not the sonification usage the key sounds use: this is the start of
         // watching something, it should follow the volume the TV was left at, and a TV muted at
@@ -129,9 +140,20 @@ object Sounds {
         val pool = SoundPool.Builder().setMaxStreams(1).setAudioAttributes(attrs).build()
         boot = pool.load(context, R.raw.boot, 1)
         pool.setOnLoadCompleteListener { p, id, status ->
-            if (status == 0 && id == boot) p.play(id, 1f, 1f, 1, 0, 1f)
+            if (status == 0 && id == boot) {
+                bootReady = true
+                // A strike asked for before the sample arrived is played now, not dropped.
+                if (bootWanted) strike()
+            }
         }
         bootPool = pool
+    }
+
+    private fun strike() {
+        val pool = bootPool ?: return
+        if (!bootWanted || boot == 0) return
+        bootWanted = false
+        pool.play(boot, 1f, 1f, 1, 0, 1f)
     }
 
     /** A slider moved one step (volume, brightness). */

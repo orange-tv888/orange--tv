@@ -781,12 +781,8 @@ class MainActivity : ComponentActivity() {
     private fun startWork() {
         DiagLog.i("onStart")
         SelfCompile.onHomeStarted()
-        // The chime belongs to the TV switching on, not to this screen appearing. startWork runs
-        // on every return to Home as well, so it is guarded by the boot window and by a flag.
-        if (!bootChimed && SystemClock.elapsedRealtime() < BOOT_CHIME_WINDOW_MS) {
-            bootChimed = true
-            idleHandler.postDelayed({ Sounds.boot() }, BOOT_CHIME_DELAY_MS)
-        }
+        // No start-up chime here: it belongs to the opening word, and BootWordIntro strikes it on
+        // the frame that word lands. startWork also runs on every return to Home, which must be silent.
         // The phone and computer page, at any time the TV is on (only once unlocked: its token is
         // in credential-protected storage).
         lifecycleScope.launch(Dispatchers.IO) { PhoneServer.listen(this@MainActivity) }
@@ -988,21 +984,6 @@ class MainActivity : ComponentActivity() {
     companion object {
         /** How long the film waits for Orange to come back from Home's bounce (MFTR0: 120-290 ms). */
         private const val HOME_BOUNCE_MS = 500L
-
-        /**
-         * A process that started this soon after boot is the one the TV started with, so the
-         * start-up chime is its. Later starts are the system having killed Home in the background
-         * while something else ran, and those must not chime. Three minutes covers a TV that boots
-         * to a vendor logo and takes its time handing over; a TV that has been on for hours is far
-         * past it.
-         */
-        private const val BOOT_CHIME_WINDOW_MS = 3 * 60 * 1000L
-
-        /** 700 ms in: the audio service is up, and Home has drawn by then, so the sound lands with it. */
-        private const val BOOT_CHIME_DELAY_MS = 700L
-
-        /** Once per process, whichever way [startWork] is reached. */
-        private var bootChimed = false
 
         /**
          * How long after coming back from a page that closed at once Orange waits for its window's
